@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "Scrap deaths of characters in GoT"
 output: html_notebook
 ---
 
@@ -16,56 +16,109 @@ library(tidyverse)
 
 ```{r warning=FALSE, message=FALSE}
 
-death.list <- html("https://genius.com/Screen-genius-list-of-game-of-thrones-deaths-annotated")
+if(!"interim_output" %in% list.files()){
+  
+  dir.create("interim_output")
+  
+}
 
 ```
 
+Scrap web data of character deaths
+```{r warning=FALSE, message=FALSE}
+
+if(!"death.web.RDS" %in% list.files("interim_output") ){
+
+death.web <- html("https://genius.com/Screen-genius-list-of-game-of-thrones-deaths-annotated")
+
+saveRDS(death.web, "interim_output/death.web.RDS")
+
+} else{
+  
+  death.web <- readRDS("interim_output/death.web.RDS")
+  
+}
+
+```
 
 ```{r warning=FALSE, message=FALSE}
 
-season.one <- death.list %>% 
+death.list <- list()
+
+nodes.df <- data_frame(nodes = c(4,6,8,10,12,14,16),
+                       season = str_c("season", 1:7, sep = "_"))
+
+for (i in 1:nrow(nodes.df)){
+
+death.list [[nodes.df[[i,"season"]]]] <- death.web %>% 
+  html_node(str_c("p:nth-child(",nodes.df[i,"nodes"], ")", sep = "") ) %>%
+  html_text() %>%
+  str_split(pattern = "Episode " ) %>% 
+  unlist() %>%
+  .[2:length(.)]
+  
+}
+
+```
+
+```{r warning=FALSE, message=FALSE}
+
+death.list %<>% 
+  map(function(x) {str_split(x, pattern = "\n.", simplify = T) %>%
+  as_data_frame() %>%
+  map_df(function(o){str_replace(o, pattern = "\\n", replacement = "")}) })
+
+death.list
+  
+```
+
+One way of doing it 
+
+```{r warning=FALSE, message=FALSE}
+
+season.one <- death.web %>% 
   html_node("p:nth-child(4)") %>%
   html_text() %>%
   str_split(pattern = "Episode " ) %>% 
   unlist() %>%
   .[2:length(.)]
 
-season.two <- death.list %>% 
+season.two <- death.web %>% 
   html_node("p:nth-child(6)") %>%
   html_text() %>%
   str_split(pattern = "Episode ") %>% 
   unlist() %>%
   .[2:length(.)]
 
-season.three <- death.list %>% 
+season.three <- death.web %>% 
   html_node("p:nth-child(8)") %>%
   html_text() %>%
   str_split(pattern = "Episode ") %>% 
   unlist() %>%
   .[2:length(.)]
 
-season.four <- death.list %>% 
+season.four <- death.web %>% 
   html_node("p:nth-child(10)") %>%
   html_text() %>%
   str_split(pattern = "Episode ") %>% 
   unlist() %>%
   .[2:length(.)]
 
-season.five <- death.list %>% 
+season.five <- death.web %>% 
   html_node("p:nth-child(12)") %>%
   html_text() %>%
   str_split(pattern = "Episode ") %>% 
   unlist() %>%
   .[2:length(.)]
 
-season.six <- death.list %>% 
+season.six <- death.web %>% 
   html_node("p:nth-child(14)") %>%
   html_text() %>%
   str_split(pattern = "Episode ") %>% 
   unlist() %>%
   .[2:length(.)]
 
-season.seven <- death.list %>% 
+season.seven <- death.web %>% 
   html_node("p:nth-child(16)") %>%
   html_text() %>%
   str_split(pattern = "Episode ") %>% 
@@ -91,22 +144,6 @@ season.one[["episode_name"]] %<>%
 
 
 
-```{r warning=FALSE, message=FALSE}
-
-str_extract_all(season.one, pattern = "Episode" %R% " " %R% one_or_more(DGT) %R% ": \"" %R% one_or_more(WRD) %R% optional(" ") %R% optional( one_or_more(WRD)) %R% optional(" ") %R% one_or_more(WRD) ) 
-                
-str_match_all(season.one, pattern = capture("Episode" %R% " " %R% one_or_more(DGT)) %R% ": \"" %R% capture(one_or_more(or(" ", WRD))) %R% ".*" %R% "\n" %R% "." %R% capture(one_or_more(or(" ",WRD) )) ) 
-
-str_match_all(season.one, pattern = capture("Episode" %R% " " %R% one_or_more(DGT)) %R% ": \"" %R% capture(one_or_more(or(" ", WRD))) %R% ".*\n." %R% capture(one_or_more(or(" ",WRD) )) %R% (".*\n."))
-                                                                                                                                                                                                      
-                                                                                                                                                                                                      
-                                                                                                                                                                                                      %R% capture(one_or_more(or(" ",WRD)) ))  ) 
-
- 
-str_match_all(season.one, pattern = capture("Episode " %R% one_or_more(DGT)) %R% one_or_more(or(".*", "\n", " ", "\\\\"))  )
-                        
-str_match_all(season.one, pattern = capture("Episode " %R% one_or_more(DGT)) %R% one_or_more(or("[[:print:]]", "\n")))
 
 
-#%R% "*"
-```
+
