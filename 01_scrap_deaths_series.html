@@ -120,7 +120,8 @@ $(document).ready(function () {
 </div>
 
 
-<pre class="r"><code>library(xml2)
+<pre class="r"><code>library(knitr)
+library(xml2)
 library(rebus)
 library(stringr)
 library(rvest)
@@ -166,120 +167,1338 @@ death.list [[nodes.df[[i,&quot;season&quot;]]]] &lt;- death.web %&gt;%
   
   
 death.list</code></pre>
-<pre><code>## $season_1
-## # A tibble: 9 x 9
-##   episode_number                          episode_name               V2
-## *          &lt;chr&gt;                                 &lt;chr&gt;            &lt;chr&gt;
-## 1              1                      Winter Is Coming     Waymar Royce
-## 2              2                         The Kingsroad Catspaw assassin
-## 3              4  Cripples, Bastards and Broken Things         Ser Hugh
-## 4              5                 The Wolf and the Lion         Kurleket
-## 5              6                        A Golden Crown           Wallen
-## 6              7                    You Win or You Die Robert Baratheon
-## 7              8                        The Pointy End      Vayon Poole
-## 8              9                                Baelor            Qotho
-## 9             10                        Fire and Blood           Rhaego
-## # ... with 6 more variables: V3 &lt;chr&gt;, V4 &lt;chr&gt;, V5 &lt;chr&gt;, V6 &lt;chr&gt;,
-## #   V7 &lt;chr&gt;, V8 &lt;chr&gt;
-## 
-## $season_2
-## # A tibble: 10 x 8
-##    episode_number                episode_name               V2
-##  *          &lt;chr&gt;                       &lt;chr&gt;            &lt;chr&gt;
-##  1              1         The North Remembers  Maester Cressen
-##  2              2             The Night Lands          Rakharo
-##  3              3  What is Dead May Never Die            Yoren
-##  4              4             Garden of Bones          Rennick
-##  5              5      The Ghost of Harrenhal  Renly Baratheon
-##  6              6    The Old Gods and the New    Rodrik Cassel
-##  7              7         A Man Without Honor  Alton Lannister
-##  8              8    The Prince of Winterfell            Borba
-##  9              9                  Blackwater Matthos Seaworth
-## 10             10             Valar Morghulis            Luwin
-## # ... with 5 more variables: V3 &lt;chr&gt;, V4 &lt;chr&gt;, V5 &lt;chr&gt;, V6 &lt;chr&gt;,
-## #   V7 &lt;chr&gt;
-## 
-## $season_3
-## # A tibble: 8 x 10
-##   episode_number                episode_name               V2
-## *          &lt;chr&gt;                       &lt;chr&gt;            &lt;chr&gt;
-## 1              2      Dark Wings, Dark Words     Hoster Tully
-## 2              3          Walk of Punishment  Master Torturer
-## 3              4  And Now His Watch Is Ended           Bannen
-## 4              5              Kissed by Fire Martyn Lannister
-## 5              6                   The Climb              Ros
-## 6              8                 Second Sons             Mero
-## 7              9      The Rains of Castamere          Old man
-## 8             10                       Mhysa    Frey soldiers
-## # ... with 7 more variables: V3 &lt;chr&gt;, V4 &lt;chr&gt;, V5 &lt;chr&gt;, V6 &lt;chr&gt;,
-## #   V7 &lt;chr&gt;, V8 &lt;chr&gt;, V9 &lt;chr&gt;
-## 
-## $season_4
-## # A tibble: 9 x 12
-##   episode_number                episode_name             V2            V3
-## *          &lt;chr&gt;                       &lt;chr&gt;          &lt;chr&gt;         &lt;chr&gt;
-## 1              1                  Two Swords         Lowell      Polliver
-## 2              2       The Lion and the Rose          Tansy Axell Florent
-## 3              3           Breaker of Chains Dontos Hollard        Guymon
-## 4              4                 Oath Keeper   Great master              
-## 5              5           First of His Name    Karl Tanner          Rast
-## 6              7                 Mockingbird    Unnamed man         Biter
-## 7              8  The Mountain and the Viper           Kegs   Jack Bulwer
-## 8              9    The Watchers on the Wall          Dongo        Smitty
-## 9             10                The Children          Zalla    Jojen Reed
-## # ... with 8 more variables: V4 &lt;chr&gt;, V5 &lt;chr&gt;, V6 &lt;chr&gt;, V7 &lt;chr&gt;,
-## #   V8 &lt;chr&gt;, V9 &lt;chr&gt;, V10 &lt;chr&gt;, V11 &lt;chr&gt;
-## 
-## $season_5
-## # A tibble: 10 x 9
-##    episode_number                  episode_name                V2
-##  *          &lt;chr&gt;                         &lt;chr&gt;             &lt;chr&gt;
-##  1              1              The Wars to Come         White Rat
-##  2              2  The House of Black and White          Mossador
-##  3              3                  High Sparrow     Medger Cerwyn
-##  4              4         The Sons of the Harpy  Merchant captain
-##  5              5                  Kill the Boy      Master Eaton
-##  6              6     Unbent, Unbowed, Unbroken             Ghita
-##  7              7                      The Gift     Maester Aemon
-##  8              8                      Hardhome The Lord of Bones
-##  9              9          The Dance of Dragons Shireen Baratheon
-## 10             10                Mother's Mercy  Selyse Baratheon
-## # ... with 6 more variables: V3 &lt;chr&gt;, V4 &lt;chr&gt;, V5 &lt;chr&gt;, V6 &lt;chr&gt;,
-## #   V7 &lt;chr&gt;, V8 &lt;chr&gt;
-## 
-## $season_6
-## # A tibble: 9 x 13
-##   episode_number            episode_name                            V2
-## *          &lt;chr&gt;                   &lt;chr&gt;                         &lt;chr&gt;
-## 1              1           The Red Woman                    Areo Hotah
-## 2              2                    Home                 Balon Greyjoy
-## 3              3             Oathbreaker                     Shaggydog
-## 4              4    Book of the Stranger                          Iggo
-## 5              5                The Door              Three-eyed raven
-## 6              7          The Broken Man Brother Ray and the villagers
-## 7              8                  No One                    Lady Crane
-## 8              9  Battle of the Bastards                  Rickon Stark
-## 9             10     The Winds of Winter         Grand Maester Pycelle
-## # ... with 10 more variables: V3 &lt;chr&gt;, V4 &lt;chr&gt;, V5 &lt;chr&gt;, V6 &lt;chr&gt;,
-## #   V7 &lt;chr&gt;, V8 &lt;chr&gt;, V9 &lt;chr&gt;, V10 &lt;chr&gt;, V11 &lt;chr&gt;, V12 &lt;chr&gt;
-## 
-## $season_7
-## # A tibble: 7 x 5
-##   episode_number             episode_name                 V2
-## *          &lt;chr&gt;                    &lt;chr&gt;              &lt;chr&gt;
-## 1              1              Dragonstone              Sally
-## 2              2                Stormborn       Nymeria Sand
-## 3              3      The Queen's Justice         Tyene Sand
-## 4              4        The Spoils of War                   
-## 5              5                Eastwatch      Randyll Tarly
-## 6              6          Beyond the Wall      Thoros of Myr
-## 7              7  The Dragon and the Wolf Lord Petyr Baelish
-## # ... with 2 more variables: V3 &lt;chr&gt;, V4 &lt;chr&gt;</code></pre>
-<pre class="r"><code>season.one %&lt;&gt;%
-   
+<pre class="r"><code>death.df &lt;- bind_rows(death.list, .id = &quot;season&quot;)
 
-season.one[[&quot;episode_name&quot;]] %&lt;&gt;%
-  str_replace_all(pattern = optional(&quot; &quot;) %R% &quot;\&quot;&quot;, replacement = &quot;&quot;)</code></pre>
+death.df %&lt;&gt;%
+  map_df(gsub, pattern = &quot;^$&quot;, replacement = NA_character_)
+ 
+death.df</code></pre>
+<pre class="r"><code>rm(death.list, death.web, nodes.df)</code></pre>
+<div id="exploration" class="section level1">
+<h1>Exploration</h1>
+<p>Check number of character deaths by season and ratio by number of episodes.</p>
+<pre class="r"><code>number.episodes &lt;- death.df %&gt;%
+  group_by(season) %&gt;%
+  summarise(n_episodes = episode_number %&gt;% as.numeric %&gt;% max)</code></pre>
+<pre class="r"><code>death.df.long &lt;- death.df %&gt;%
+  gather(key = &quot;key&quot;, value = &quot;character&quot;, V2:V12) %&gt;%
+  select(-key) %&gt;%
+  arrange(season, episode_number) %&gt;%
+  filter(!is.na(character))
+
+death.df.long %&gt;% kable </code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">season</th>
+<th align="left">episode_number</th>
+<th align="left">episode_name</th>
+<th align="left">character</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">season_1</td>
+<td align="left">1</td>
+<td align="left">Winter Is Coming</td>
+<td align="left">Waymar Royce</td>
+</tr>
+<tr class="even">
+<td align="left">season_1</td>
+<td align="left">1</td>
+<td align="left">Winter Is Coming</td>
+<td align="left">Gared</td>
+</tr>
+<tr class="odd">
+<td align="left">season_1</td>
+<td align="left">1</td>
+<td align="left">Winter Is Coming</td>
+<td align="left">Will</td>
+</tr>
+<tr class="even">
+<td align="left">season_1</td>
+<td align="left">1</td>
+<td align="left">Winter Is Coming</td>
+<td align="left">Jon Arryn</td>
+</tr>
+<tr class="odd">
+<td align="left">season_1</td>
+<td align="left">10</td>
+<td align="left">Fire and Blood</td>
+<td align="left">Rhaego</td>
+</tr>
+<tr class="even">
+<td align="left">season_1</td>
+<td align="left">10</td>
+<td align="left">Fire and Blood</td>
+<td align="left">Khal Drogo</td>
+</tr>
+<tr class="odd">
+<td align="left">season_1</td>
+<td align="left">10</td>
+<td align="left">Fire and Blood</td>
+<td align="left">Mirri Maz Duur</td>
+</tr>
+<tr class="even">
+<td align="left">season_1</td>
+<td align="left">2</td>
+<td align="left">The Kingsroad</td>
+<td align="left">Catspaw assassin</td>
+</tr>
+<tr class="odd">
+<td align="left">season_1</td>
+<td align="left">2</td>
+<td align="left">The Kingsroad</td>
+<td align="left">Lady</td>
+</tr>
+<tr class="even">
+<td align="left">season_1</td>
+<td align="left">2</td>
+<td align="left">The Kingsroad</td>
+<td align="left">Mycah</td>
+</tr>
+<tr class="odd">
+<td align="left">season_1</td>
+<td align="left">4</td>
+<td align="left">Cripples, Bastards and Broken Things</td>
+<td align="left">Ser Hugh</td>
+</tr>
+<tr class="even">
+<td align="left">season_1</td>
+<td align="left">5</td>
+<td align="left">The Wolf and the Lion</td>
+<td align="left">Kurleket</td>
+</tr>
+<tr class="odd">
+<td align="left">season_1</td>
+<td align="left">5</td>
+<td align="left">The Wolf and the Lion</td>
+<td align="left">Willis Wode</td>
+</tr>
+<tr class="even">
+<td align="left">season_1</td>
+<td align="left">5</td>
+<td align="left">The Wolf and the Lion</td>
+<td align="left">Jory Cassel</td>
+</tr>
+<tr class="odd">
+<td align="left">season_1</td>
+<td align="left">5</td>
+<td align="left">The Wolf and the Lion</td>
+<td align="left">Wyl</td>
+</tr>
+<tr class="even">
+<td align="left">season_1</td>
+<td align="left">5</td>
+<td align="left">The Wolf and the Lion</td>
+<td align="left">Heward</td>
+</tr>
+<tr class="odd">
+<td align="left">season_1</td>
+<td align="left">6</td>
+<td align="left">A Golden Crown</td>
+<td align="left">Wallen</td>
+</tr>
+<tr class="even">
+<td align="left">season_1</td>
+<td align="left">6</td>
+<td align="left">A Golden Crown</td>
+<td align="left">Stiv</td>
+</tr>
+<tr class="odd">
+<td align="left">season_1</td>
+<td align="left">6</td>
+<td align="left">A Golden Crown</td>
+<td align="left">Vardis Egen</td>
+</tr>
+<tr class="even">
+<td align="left">season_1</td>
+<td align="left">6</td>
+<td align="left">A Golden Crown</td>
+<td align="left">Viserys Targaryen</td>
+</tr>
+<tr class="odd">
+<td align="left">season_1</td>
+<td align="left">7</td>
+<td align="left">You Win or You Die</td>
+<td align="left">Robert Baratheon</td>
+</tr>
+<tr class="even">
+<td align="left">season_1</td>
+<td align="left">7</td>
+<td align="left">You Win or You Die</td>
+<td align="left">Varly</td>
+</tr>
+<tr class="odd">
+<td align="left">season_1</td>
+<td align="left">8</td>
+<td align="left">The Pointy End</td>
+<td align="left">Vayon Poole</td>
+</tr>
+<tr class="even">
+<td align="left">season_1</td>
+<td align="left">8</td>
+<td align="left">The Pointy End</td>
+<td align="left">Septa Mordane</td>
+</tr>
+<tr class="odd">
+<td align="left">season_1</td>
+<td align="left">8</td>
+<td align="left">The Pointy End</td>
+<td align="left">Syrio Forel</td>
+</tr>
+<tr class="even">
+<td align="left">season_1</td>
+<td align="left">8</td>
+<td align="left">The Pointy End</td>
+<td align="left">Stableboy</td>
+</tr>
+<tr class="odd">
+<td align="left">season_1</td>
+<td align="left">8</td>
+<td align="left">The Pointy End</td>
+<td align="left">Mago</td>
+</tr>
+<tr class="even">
+<td align="left">season_1</td>
+<td align="left">8</td>
+<td align="left">The Pointy End</td>
+<td align="left">Jafer Flowers</td>
+</tr>
+<tr class="odd">
+<td align="left">season_1</td>
+<td align="left">8</td>
+<td align="left">The Pointy End</td>
+<td align="left">Othor</td>
+</tr>
+<tr class="even">
+<td align="left">season_1</td>
+<td align="left">9</td>
+<td align="left">Baelor</td>
+<td align="left">Qotho</td>
+</tr>
+<tr class="odd">
+<td align="left">season_1</td>
+<td align="left">9</td>
+<td align="left">Baelor</td>
+<td align="left">Eddard Ned Stark</td>
+</tr>
+<tr class="even">
+<td align="left">season_2</td>
+<td align="left">1</td>
+<td align="left">The North Remembers</td>
+<td align="left">Maester Cressen</td>
+</tr>
+<tr class="odd">
+<td align="left">season_2</td>
+<td align="left">1</td>
+<td align="left">The North Remembers</td>
+<td align="left">Barra</td>
+</tr>
+<tr class="even">
+<td align="left">season_2</td>
+<td align="left">10</td>
+<td align="left">Valar Morghulis</td>
+<td align="left">Luwin</td>
+</tr>
+<tr class="odd">
+<td align="left">season_2</td>
+<td align="left">10</td>
+<td align="left">Valar Morghulis</td>
+<td align="left">Pyat Pree</td>
+</tr>
+<tr class="even">
+<td align="left">season_2</td>
+<td align="left">10</td>
+<td align="left">Valar Morghulis</td>
+<td align="left">Qhorin Halfhand</td>
+</tr>
+<tr class="odd">
+<td align="left">season_2</td>
+<td align="left">10</td>
+<td align="left">Valar Morghulis</td>
+<td align="left">Xaro Xhoan Daxos</td>
+</tr>
+<tr class="even">
+<td align="left">season_2</td>
+<td align="left">10</td>
+<td align="left">Valar Morghulis</td>
+<td align="left">Doreah</td>
+</tr>
+<tr class="odd">
+<td align="left">season_2</td>
+<td align="left">10</td>
+<td align="left">Valar Morghulis</td>
+<td align="left">Tom</td>
+</tr>
+<tr class="even">
+<td align="left">season_2</td>
+<td align="left">2</td>
+<td align="left">The Night Lands</td>
+<td align="left">Rakharo</td>
+</tr>
+<tr class="odd">
+<td align="left">season_2</td>
+<td align="left">3</td>
+<td align="left">What is Dead May Never Die</td>
+<td align="left">Yoren</td>
+</tr>
+<tr class="even">
+<td align="left">season_2</td>
+<td align="left">3</td>
+<td align="left">What is Dead May Never Die</td>
+<td align="left">Lommy Greenhands</td>
+</tr>
+<tr class="odd">
+<td align="left">season_2</td>
+<td align="left">4</td>
+<td align="left">Garden of Bones</td>
+<td align="left">Rennick</td>
+</tr>
+<tr class="even">
+<td align="left">season_2</td>
+<td align="left">4</td>
+<td align="left">Garden of Bones</td>
+<td align="left">Lannister guard</td>
+</tr>
+<tr class="odd">
+<td align="left">season_2</td>
+<td align="left">4</td>
+<td align="left">Garden of Bones</td>
+<td align="left">Tortured prisoner</td>
+</tr>
+<tr class="even">
+<td align="left">season_2</td>
+<td align="left">4</td>
+<td align="left">Garden of Bones</td>
+<td align="left">Stafford Lannister</td>
+</tr>
+<tr class="odd">
+<td align="left">season_2</td>
+<td align="left">5</td>
+<td align="left">The Ghost of Harrenhal</td>
+<td align="left">Renly Baratheon</td>
+</tr>
+<tr class="even">
+<td align="left">season_2</td>
+<td align="left">5</td>
+<td align="left">The Ghost of Harrenhal</td>
+<td align="left">Emmon Cuy</td>
+</tr>
+<tr class="odd">
+<td align="left">season_2</td>
+<td align="left">5</td>
+<td align="left">The Ghost of Harrenhal</td>
+<td align="left">Robar Royce</td>
+</tr>
+<tr class="even">
+<td align="left">season_2</td>
+<td align="left">5</td>
+<td align="left">The Ghost of Harrenhal</td>
+<td align="left">The Tickler</td>
+</tr>
+<tr class="odd">
+<td align="left">season_2</td>
+<td align="left">6</td>
+<td align="left">The Old Gods and the New</td>
+<td align="left">Rodrik Cassel</td>
+</tr>
+<tr class="even">
+<td align="left">season_2</td>
+<td align="left">6</td>
+<td align="left">The Old Gods and the New</td>
+<td align="left">The High Septon</td>
+</tr>
+<tr class="odd">
+<td align="left">season_2</td>
+<td align="left">6</td>
+<td align="left">The Old Gods and the New</td>
+<td align="left">Amory Lorch</td>
+</tr>
+<tr class="even">
+<td align="left">season_2</td>
+<td align="left">6</td>
+<td align="left">The Old Gods and the New</td>
+<td align="left">Drennan</td>
+</tr>
+<tr class="odd">
+<td align="left">season_2</td>
+<td align="left">6</td>
+<td align="left">The Old Gods and the New</td>
+<td align="left">Irri</td>
+</tr>
+<tr class="even">
+<td align="left">season_2</td>
+<td align="left">7</td>
+<td align="left">A Man Without Honor</td>
+<td align="left">Alton Lannister</td>
+</tr>
+<tr class="odd">
+<td align="left">season_2</td>
+<td align="left">7</td>
+<td align="left">A Man Without Honor</td>
+<td align="left">Torrhen Karstark</td>
+</tr>
+<tr class="even">
+<td align="left">season_2</td>
+<td align="left">7</td>
+<td align="left">A Man Without Honor</td>
+<td align="left">The Thirteen</td>
+</tr>
+<tr class="odd">
+<td align="left">season_2</td>
+<td align="left">7</td>
+<td align="left">A Man Without Honor</td>
+<td align="left">Billy</td>
+</tr>
+<tr class="even">
+<td align="left">season_2</td>
+<td align="left">7</td>
+<td align="left">A Man Without Honor</td>
+<td align="left">Jack</td>
+</tr>
+<tr class="odd">
+<td align="left">season_2</td>
+<td align="left">8</td>
+<td align="left">The Prince of Winterfell</td>
+<td align="left">Borba</td>
+</tr>
+<tr class="even">
+<td align="left">season_2</td>
+<td align="left">8</td>
+<td align="left">The Prince of Winterfell</td>
+<td align="left">Harker</td>
+</tr>
+<tr class="odd">
+<td align="left">season_2</td>
+<td align="left">8</td>
+<td align="left">The Prince of Winterfell</td>
+<td align="left">Stonesnake</td>
+</tr>
+<tr class="even">
+<td align="left">season_2</td>
+<td align="left">9</td>
+<td align="left">Blackwater</td>
+<td align="left">Matthos Seaworth</td>
+</tr>
+<tr class="odd">
+<td align="left">season_2</td>
+<td align="left">9</td>
+<td align="left">Blackwater</td>
+<td align="left">Mandon Moore</td>
+</tr>
+<tr class="even">
+<td align="left">season_3</td>
+<td align="left">10</td>
+<td align="left">Mhysa</td>
+<td align="left">Frey soldiers</td>
+</tr>
+<tr class="odd">
+<td align="left">season_3</td>
+<td align="left">2</td>
+<td align="left">Dark Wings, Dark Words</td>
+<td align="left">Hoster Tully</td>
+</tr>
+<tr class="even">
+<td align="left">season_3</td>
+<td align="left">3</td>
+<td align="left">Walk of Punishment</td>
+<td align="left">Master Torturer</td>
+</tr>
+<tr class="odd">
+<td align="left">season_3</td>
+<td align="left">4</td>
+<td align="left">And Now His Watch Is Ended</td>
+<td align="left">Bannen</td>
+</tr>
+<tr class="even">
+<td align="left">season_3</td>
+<td align="left">4</td>
+<td align="left">And Now His Watch Is Ended</td>
+<td align="left">Craster</td>
+</tr>
+<tr class="odd">
+<td align="left">season_3</td>
+<td align="left">4</td>
+<td align="left">And Now His Watch Is Ended</td>
+<td align="left">Jeor Morment</td>
+</tr>
+<tr class="even">
+<td align="left">season_3</td>
+<td align="left">4</td>
+<td align="left">And Now His Watch Is Ended</td>
+<td align="left">Kraznys mo Nakloz</td>
+</tr>
+<tr class="odd">
+<td align="left">season_3</td>
+<td align="left">4</td>
+<td align="left">And Now His Watch Is Ended</td>
+<td align="left">Griezhen mo Ullhor</td>
+</tr>
+<tr class="even">
+<td align="left">season_3</td>
+<td align="left">5</td>
+<td align="left">Kissed by Fire</td>
+<td align="left">Martyn Lannister</td>
+</tr>
+<tr class="odd">
+<td align="left">season_3</td>
+<td align="left">5</td>
+<td align="left">Kissed by Fire</td>
+<td align="left">Willem Lannister</td>
+</tr>
+<tr class="even">
+<td align="left">season_3</td>
+<td align="left">5</td>
+<td align="left">Kissed by Fire</td>
+<td align="left">Karstark lookout</td>
+</tr>
+<tr class="odd">
+<td align="left">season_3</td>
+<td align="left">5</td>
+<td align="left">Kissed by Fire</td>
+<td align="left">Rickard Karstark</td>
+</tr>
+<tr class="even">
+<td align="left">season_3</td>
+<td align="left">6</td>
+<td align="left">The Climb</td>
+<td align="left">Ros</td>
+</tr>
+<tr class="odd">
+<td align="left">season_3</td>
+<td align="left">8</td>
+<td align="left">Second Sons</td>
+<td align="left">Mero</td>
+</tr>
+<tr class="even">
+<td align="left">season_3</td>
+<td align="left">8</td>
+<td align="left">Second Sons</td>
+<td align="left">Prendahl na Ghezn</td>
+</tr>
+<tr class="odd">
+<td align="left">season_3</td>
+<td align="left">8</td>
+<td align="left">Second Sons</td>
+<td align="left">White Walker</td>
+</tr>
+<tr class="even">
+<td align="left">season_3</td>
+<td align="left">9</td>
+<td align="left">The Rains of Castamere</td>
+<td align="left">Old man</td>
+</tr>
+<tr class="odd">
+<td align="left">season_3</td>
+<td align="left">9</td>
+<td align="left">The Rains of Castamere</td>
+<td align="left">Orell</td>
+</tr>
+<tr class="even">
+<td align="left">season_3</td>
+<td align="left">9</td>
+<td align="left">The Rains of Castamere</td>
+<td align="left">Wendel Manderly</td>
+</tr>
+<tr class="odd">
+<td align="left">season_3</td>
+<td align="left">9</td>
+<td align="left">The Rains of Castamere</td>
+<td align="left">Joyeuse Erenford</td>
+</tr>
+<tr class="even">
+<td align="left">season_3</td>
+<td align="left">9</td>
+<td align="left">The Rains of Castamere</td>
+<td align="left">Catelyn Stark</td>
+</tr>
+<tr class="odd">
+<td align="left">season_3</td>
+<td align="left">9</td>
+<td align="left">The Rains of Castamere</td>
+<td align="left">Robb Stark</td>
+</tr>
+<tr class="even">
+<td align="left">season_3</td>
+<td align="left">9</td>
+<td align="left">The Rains of Castamere</td>
+<td align="left">Talisa Stark</td>
+</tr>
+<tr class="odd">
+<td align="left">season_3</td>
+<td align="left">9</td>
+<td align="left">The Rains of Castamere</td>
+<td align="left">Grey Wind</td>
+</tr>
+<tr class="even">
+<td align="left">season_4</td>
+<td align="left">1</td>
+<td align="left">Two Swords</td>
+<td align="left">Lowell</td>
+</tr>
+<tr class="odd">
+<td align="left">season_4</td>
+<td align="left">1</td>
+<td align="left">Two Swords</td>
+<td align="left">Polliver</td>
+</tr>
+<tr class="even">
+<td align="left">season_4</td>
+<td align="left">10</td>
+<td align="left">The Children</td>
+<td align="left">Zalla</td>
+</tr>
+<tr class="odd">
+<td align="left">season_4</td>
+<td align="left">10</td>
+<td align="left">The Children</td>
+<td align="left">Jojen Reed</td>
+</tr>
+<tr class="even">
+<td align="left">season_4</td>
+<td align="left">10</td>
+<td align="left">The Children</td>
+<td align="left">Shae</td>
+</tr>
+<tr class="odd">
+<td align="left">season_4</td>
+<td align="left">10</td>
+<td align="left">The Children</td>
+<td align="left">Tywin Lannister</td>
+</tr>
+<tr class="even">
+<td align="left">season_4</td>
+<td align="left">2</td>
+<td align="left">The Lion and the Rose</td>
+<td align="left">Tansy</td>
+</tr>
+<tr class="odd">
+<td align="left">season_4</td>
+<td align="left">2</td>
+<td align="left">The Lion and the Rose</td>
+<td align="left">Axell Florent</td>
+</tr>
+<tr class="even">
+<td align="left">season_4</td>
+<td align="left">2</td>
+<td align="left">The Lion and the Rose</td>
+<td align="left">Joffrey Baratheon</td>
+</tr>
+<tr class="odd">
+<td align="left">season_4</td>
+<td align="left">3</td>
+<td align="left">Breaker of Chains</td>
+<td align="left">Dontos Hollard</td>
+</tr>
+<tr class="even">
+<td align="left">season_4</td>
+<td align="left">3</td>
+<td align="left">Breaker of Chains</td>
+<td align="left">Guymon</td>
+</tr>
+<tr class="odd">
+<td align="left">season_4</td>
+<td align="left">3</td>
+<td align="left">Breaker of Chains</td>
+<td align="left">Olly’s mother</td>
+</tr>
+<tr class="even">
+<td align="left">season_4</td>
+<td align="left">3</td>
+<td align="left">Breaker of Chains</td>
+<td align="left">Oznak zo Pahl</td>
+</tr>
+<tr class="odd">
+<td align="left">season_4</td>
+<td align="left">4</td>
+<td align="left">Oath Keeper</td>
+<td align="left">Great master</td>
+</tr>
+<tr class="even">
+<td align="left">season_4</td>
+<td align="left">5</td>
+<td align="left">First of His Name</td>
+<td align="left">Karl Tanner</td>
+</tr>
+<tr class="odd">
+<td align="left">season_4</td>
+<td align="left">5</td>
+<td align="left">First of His Name</td>
+<td align="left">Rast</td>
+</tr>
+<tr class="even">
+<td align="left">season_4</td>
+<td align="left">5</td>
+<td align="left">First of His Name</td>
+<td align="left">Locke</td>
+</tr>
+<tr class="odd">
+<td align="left">season_4</td>
+<td align="left">7</td>
+<td align="left">Mockingbird</td>
+<td align="left">Unnamed man</td>
+</tr>
+<tr class="even">
+<td align="left">season_4</td>
+<td align="left">7</td>
+<td align="left">Mockingbird</td>
+<td align="left">Biter</td>
+</tr>
+<tr class="odd">
+<td align="left">season_4</td>
+<td align="left">7</td>
+<td align="left">Mockingbird</td>
+<td align="left">Rorge</td>
+</tr>
+<tr class="even">
+<td align="left">season_4</td>
+<td align="left">7</td>
+<td align="left">Mockingbird</td>
+<td align="left">Lysa Arryn</td>
+</tr>
+<tr class="odd">
+<td align="left">season_4</td>
+<td align="left">8</td>
+<td align="left">The Mountain and the Viper</td>
+<td align="left">Kegs</td>
+</tr>
+<tr class="even">
+<td align="left">season_4</td>
+<td align="left">8</td>
+<td align="left">The Mountain and the Viper</td>
+<td align="left">Jack Bulwer</td>
+</tr>
+<tr class="odd">
+<td align="left">season_4</td>
+<td align="left">8</td>
+<td align="left">The Mountain and the Viper</td>
+<td align="left">Mully</td>
+</tr>
+<tr class="even">
+<td align="left">season_4</td>
+<td align="left">8</td>
+<td align="left">The Mountain and the Viper</td>
+<td align="left">Ralf Kenning</td>
+</tr>
+<tr class="odd">
+<td align="left">season_4</td>
+<td align="left">8</td>
+<td align="left">The Mountain and the Viper</td>
+<td align="left">Adrack Humble</td>
+</tr>
+<tr class="even">
+<td align="left">season_4</td>
+<td align="left">8</td>
+<td align="left">The Mountain and the Viper</td>
+<td align="left">Oberyn Martell</td>
+</tr>
+<tr class="odd">
+<td align="left">season_4</td>
+<td align="left">9</td>
+<td align="left">The Watchers on the Wall</td>
+<td align="left">Dongo</td>
+</tr>
+<tr class="even">
+<td align="left">season_4</td>
+<td align="left">9</td>
+<td align="left">The Watchers on the Wall</td>
+<td align="left">Smitty</td>
+</tr>
+<tr class="odd">
+<td align="left">season_4</td>
+<td align="left">9</td>
+<td align="left">The Watchers on the Wall</td>
+<td align="left">Pypar</td>
+</tr>
+<tr class="even">
+<td align="left">season_4</td>
+<td align="left">9</td>
+<td align="left">The Watchers on the Wall</td>
+<td align="left">Thenn warg</td>
+</tr>
+<tr class="odd">
+<td align="left">season_4</td>
+<td align="left">9</td>
+<td align="left">The Watchers on the Wall</td>
+<td align="left">Styr</td>
+</tr>
+<tr class="even">
+<td align="left">season_4</td>
+<td align="left">9</td>
+<td align="left">The Watchers on the Wall</td>
+<td align="left">Mag Mar Tun Doh Weg</td>
+</tr>
+<tr class="odd">
+<td align="left">season_4</td>
+<td align="left">9</td>
+<td align="left">The Watchers on the Wall</td>
+<td align="left">Grenn</td>
+</tr>
+<tr class="even">
+<td align="left">season_4</td>
+<td align="left">9</td>
+<td align="left">The Watchers on the Wall</td>
+<td align="left">Cooper</td>
+</tr>
+<tr class="odd">
+<td align="left">season_4</td>
+<td align="left">9</td>
+<td align="left">The Watchers on the Wall</td>
+<td align="left">Donnel Hill</td>
+</tr>
+<tr class="even">
+<td align="left">season_4</td>
+<td align="left">9</td>
+<td align="left">The Watchers on the Wall</td>
+<td align="left">Ygritte</td>
+</tr>
+<tr class="odd">
+<td align="left">season_5</td>
+<td align="left">1</td>
+<td align="left">The Wars to Come</td>
+<td align="left">White Rat</td>
+</tr>
+<tr class="even">
+<td align="left">season_5</td>
+<td align="left">1</td>
+<td align="left">The Wars to Come</td>
+<td align="left">Mance Rayder</td>
+</tr>
+<tr class="odd">
+<td align="left">season_5</td>
+<td align="left">10</td>
+<td align="left">Mother’s Mercy</td>
+<td align="left">Selyse Baratheon</td>
+</tr>
+<tr class="even">
+<td align="left">season_5</td>
+<td align="left">10</td>
+<td align="left">Mother’s Mercy</td>
+<td align="left">Stannis Baratheon</td>
+</tr>
+<tr class="odd">
+<td align="left">season_5</td>
+<td align="left">10</td>
+<td align="left">Mother’s Mercy</td>
+<td align="left">Baratheon general</td>
+</tr>
+<tr class="even">
+<td align="left">season_5</td>
+<td align="left">10</td>
+<td align="left">Mother’s Mercy</td>
+<td align="left">Myranda</td>
+</tr>
+<tr class="odd">
+<td align="left">season_5</td>
+<td align="left">10</td>
+<td align="left">Mother’s Mercy</td>
+<td align="left">Meryn Trant</td>
+</tr>
+<tr class="even">
+<td align="left">season_5</td>
+<td align="left">10</td>
+<td align="left">Mother’s Mercy</td>
+<td align="left">Myrcella Baratheon</td>
+</tr>
+<tr class="odd">
+<td align="left">season_5</td>
+<td align="left">10</td>
+<td align="left">Mother’s Mercy</td>
+<td align="left">Jon Snow</td>
+</tr>
+<tr class="even">
+<td align="left">season_5</td>
+<td align="left">2</td>
+<td align="left">The House of Black and White</td>
+<td align="left">Mossador</td>
+</tr>
+<tr class="odd">
+<td align="left">season_5</td>
+<td align="left">2</td>
+<td align="left">The House of Black and White</td>
+<td align="left">Unnamed dwarf</td>
+</tr>
+<tr class="even">
+<td align="left">season_5</td>
+<td align="left">2</td>
+<td align="left">The House of Black and White</td>
+<td align="left">Son of the Harpy</td>
+</tr>
+<tr class="odd">
+<td align="left">season_5</td>
+<td align="left">3</td>
+<td align="left">High Sparrow</td>
+<td align="left">Medger Cerwyn</td>
+</tr>
+<tr class="even">
+<td align="left">season_5</td>
+<td align="left">3</td>
+<td align="left">High Sparrow</td>
+<td align="left">Medger’s brother</td>
+</tr>
+<tr class="odd">
+<td align="left">season_5</td>
+<td align="left">3</td>
+<td align="left">High Sparrow</td>
+<td align="left">Lady Cerwyn</td>
+</tr>
+<tr class="even">
+<td align="left">season_5</td>
+<td align="left">3</td>
+<td align="left">High Sparrow</td>
+<td align="left">Despondent man</td>
+</tr>
+<tr class="odd">
+<td align="left">season_5</td>
+<td align="left">3</td>
+<td align="left">High Sparrow</td>
+<td align="left">Janos Slynt</td>
+</tr>
+<tr class="even">
+<td align="left">season_5</td>
+<td align="left">4</td>
+<td align="left">The Sons of the Harpy</td>
+<td align="left">Merchant captain</td>
+</tr>
+<tr class="odd">
+<td align="left">season_5</td>
+<td align="left">4</td>
+<td align="left">The Sons of the Harpy</td>
+<td align="left">Dornish guards</td>
+</tr>
+<tr class="even">
+<td align="left">season_5</td>
+<td align="left">4</td>
+<td align="left">The Sons of the Harpy</td>
+<td align="left">Barristan Selmy</td>
+</tr>
+<tr class="odd">
+<td align="left">season_5</td>
+<td align="left">5</td>
+<td align="left">Kill the Boy</td>
+<td align="left">Master Eaton</td>
+</tr>
+<tr class="even">
+<td align="left">season_5</td>
+<td align="left">6</td>
+<td align="left">Unbent, Unbowed, Unbroken</td>
+<td align="left">Ghita</td>
+</tr>
+<tr class="odd">
+<td align="left">season_5</td>
+<td align="left">7</td>
+<td align="left">The Gift</td>
+<td align="left">Maester Aemon</td>
+</tr>
+<tr class="even">
+<td align="left">season_5</td>
+<td align="left">7</td>
+<td align="left">The Gift</td>
+<td align="left">Old servant woman</td>
+</tr>
+<tr class="odd">
+<td align="left">season_5</td>
+<td align="left">8</td>
+<td align="left">Hardhome</td>
+<td align="left">The Lord of Bones</td>
+</tr>
+<tr class="even">
+<td align="left">season_5</td>
+<td align="left">8</td>
+<td align="left">Hardhome</td>
+<td align="left">Loboda</td>
+</tr>
+<tr class="odd">
+<td align="left">season_5</td>
+<td align="left">8</td>
+<td align="left">Hardhome</td>
+<td align="left">A white walker</td>
+</tr>
+<tr class="even">
+<td align="left">season_5</td>
+<td align="left">8</td>
+<td align="left">Hardhome</td>
+<td align="left">Karsi</td>
+</tr>
+<tr class="odd">
+<td align="left">season_5</td>
+<td align="left">9</td>
+<td align="left">The Dance of Dragons</td>
+<td align="left">Shireen Baratheon</td>
+</tr>
+<tr class="even">
+<td align="left">season_5</td>
+<td align="left">9</td>
+<td align="left">The Dance of Dragons</td>
+<td align="left">Hizdahr zo Loraq</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">1</td>
+<td align="left">The Red Woman</td>
+<td align="left">Areo Hotah</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">1</td>
+<td align="left">The Red Woman</td>
+<td align="left">Caleotte</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">1</td>
+<td align="left">The Red Woman</td>
+<td align="left">Doran Martell</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">1</td>
+<td align="left">The Red Woman</td>
+<td align="left">Trystane Martell</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">10</td>
+<td align="left">The Winds of Winter</td>
+<td align="left">Grand Maester Pycelle</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">10</td>
+<td align="left">The Winds of Winter</td>
+<td align="left">Brother Lancel Lannister</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">10</td>
+<td align="left">The Winds of Winter</td>
+<td align="left">Ser Kevan Lannister</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">10</td>
+<td align="left">The Winds of Winter</td>
+<td align="left">Loras Tyrell</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">10</td>
+<td align="left">The Winds of Winter</td>
+<td align="left">Margaery Tyrell</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">10</td>
+<td align="left">The Winds of Winter</td>
+<td align="left">Mace Tyrell</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">10</td>
+<td align="left">The Winds of Winter</td>
+<td align="left">High Sparrow</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">10</td>
+<td align="left">The Winds of Winter</td>
+<td align="left">Tommen Baratheon</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">10</td>
+<td align="left">The Winds of Winter</td>
+<td align="left">Lothar Frey</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">10</td>
+<td align="left">The Winds of Winter</td>
+<td align="left">Black Walder Rivers</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">10</td>
+<td align="left">The Winds of Winter</td>
+<td align="left">Walder Frey</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">2</td>
+<td align="left">Home</td>
+<td align="left">Balon Greyjoy</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">2</td>
+<td align="left">Home</td>
+<td align="left">Roose Bolton</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">2</td>
+<td align="left">Home</td>
+<td align="left">Walda Frey</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">2</td>
+<td align="left">Home</td>
+<td align="left">Frey-Bolton baby</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">3</td>
+<td align="left">Oathbreaker</td>
+<td align="left">Shaggydog</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">3</td>
+<td align="left">Oathbreaker</td>
+<td align="left">Bowen Marsh</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">3</td>
+<td align="left">Oathbreaker</td>
+<td align="left">Othell Yarwyck</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">3</td>
+<td align="left">Oathbreaker</td>
+<td align="left">Alliser Thorne</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">3</td>
+<td align="left">Oathbreaker</td>
+<td align="left">Olly</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">4</td>
+<td align="left">Book of the Stranger</td>
+<td align="left">Iggo</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">4</td>
+<td align="left">Book of the Stranger</td>
+<td align="left">Akho</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">4</td>
+<td align="left">Book of the Stranger</td>
+<td align="left">Osha</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">4</td>
+<td align="left">Book of the Stranger</td>
+<td align="left">Khal Rhalko</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">4</td>
+<td align="left">Book of the Stranger</td>
+<td align="left">Khal Brozho</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">4</td>
+<td align="left">Book of the Stranger</td>
+<td align="left">Khal Qorro</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">4</td>
+<td align="left">Book of the Stranger</td>
+<td align="left">Khal Forzho</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">4</td>
+<td align="left">Book of the Stranger</td>
+<td align="left">Khal Moro</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">5</td>
+<td align="left">The Door</td>
+<td align="left">Three-eyed raven</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">5</td>
+<td align="left">The Door</td>
+<td align="left">Summer</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">5</td>
+<td align="left">The Door</td>
+<td align="left">White Walker</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">5</td>
+<td align="left">The Door</td>
+<td align="left">Leaf</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">5</td>
+<td align="left">The Door</td>
+<td align="left">Hodor</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">7</td>
+<td align="left">The Broken Man</td>
+<td align="left">Brother Ray and the villagers</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">8</td>
+<td align="left">No One</td>
+<td align="left">Lady Crane</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">8</td>
+<td align="left">No One</td>
+<td align="left">The Blackfish</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">8</td>
+<td align="left">No One</td>
+<td align="left">Lem Lemoncloak</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">8</td>
+<td align="left">No One</td>
+<td align="left">The Waif</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">9</td>
+<td align="left">Battle of the Bastards</td>
+<td align="left">Rickon Stark</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">9</td>
+<td align="left">Battle of the Bastards</td>
+<td align="left">Smalljon Umber</td>
+</tr>
+<tr class="odd">
+<td align="left">season_6</td>
+<td align="left">9</td>
+<td align="left">Battle of the Bastards</td>
+<td align="left">Wun Weg Wun Dar Wun</td>
+</tr>
+<tr class="even">
+<td align="left">season_6</td>
+<td align="left">9</td>
+<td align="left">Battle of the Bastards</td>
+<td align="left">Ramsay Bolton</td>
+</tr>
+<tr class="odd">
+<td align="left">season_7</td>
+<td align="left">1</td>
+<td align="left">Dragonstone</td>
+<td align="left">Sally</td>
+</tr>
+<tr class="even">
+<td align="left">season_7</td>
+<td align="left">1</td>
+<td align="left">Dragonstone</td>
+<td align="left">Sally’s father</td>
+</tr>
+<tr class="odd">
+<td align="left">season_7</td>
+<td align="left">2</td>
+<td align="left">Stormborn</td>
+<td align="left">Nymeria Sand</td>
+</tr>
+<tr class="even">
+<td align="left">season_7</td>
+<td align="left">2</td>
+<td align="left">Stormborn</td>
+<td align="left">Obara Sand</td>
+</tr>
+<tr class="odd">
+<td align="left">season_7</td>
+<td align="left">3</td>
+<td align="left">The Queen’s Justice</td>
+<td align="left">Tyene Sand</td>
+</tr>
+<tr class="even">
+<td align="left">season_7</td>
+<td align="left">3</td>
+<td align="left">The Queen’s Justice</td>
+<td align="left">Olenna Tyrell</td>
+</tr>
+<tr class="odd">
+<td align="left">season_7</td>
+<td align="left">5</td>
+<td align="left">Eastwatch</td>
+<td align="left">Randyll Tarly</td>
+</tr>
+<tr class="even">
+<td align="left">season_7</td>
+<td align="left">5</td>
+<td align="left">Eastwatch</td>
+<td align="left">Dickon Tarly</td>
+</tr>
+<tr class="odd">
+<td align="left">season_7</td>
+<td align="left">6</td>
+<td align="left">Beyond the Wall</td>
+<td align="left">Thoros of Myr</td>
+</tr>
+<tr class="even">
+<td align="left">season_7</td>
+<td align="left">6</td>
+<td align="left">Beyond the Wall</td>
+<td align="left">Viserion</td>
+</tr>
+<tr class="odd">
+<td align="left">season_7</td>
+<td align="left">6</td>
+<td align="left">Beyond the Wall</td>
+<td align="left">Benjen Stark</td>
+</tr>
+<tr class="even">
+<td align="left">season_7</td>
+<td align="left">7</td>
+<td align="left">The Dragon and the Wolf</td>
+<td align="left">Lord Petyr Baelish</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>death.df.long %&gt;%
+  count(season) %&gt;%
+  left_join(number.episodes, by = &quot;season&quot;) %&gt;%
+  rename(total_deaths = n ) %&gt;%
+  mutate(deaths_by_episode = (total_deaths/n_episodes) %&gt;% round(1) )</code></pre>
+<pre><code>## # A tibble: 7 x 4
+##     season total_deaths n_episodes deaths_by_episode
+##      &lt;chr&gt;        &lt;int&gt;      &lt;dbl&gt;             &lt;dbl&gt;
+## 1 season_1           31         10               3.1
+## 2 season_2           34         10               3.4
+## 3 season_3           24         10               2.4
+## 4 season_4           37         10               3.7
+## 5 season_5           30         10               3.0
+## 6 season_6           46         10               4.6
+## 7 season_7           12          7               1.7</code></pre>
+</div>
 
 
 

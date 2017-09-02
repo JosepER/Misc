@@ -1,0 +1,75 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+library(knitr)
+library(xml2)
+library(rebus)
+library(stringr)
+library(rvest)
+library(magrittr)
+library(tidyverse)
+
+```
+
+https://genius.com/albums/Game-of-thrones/Season-1-scripts
+
+https://genius.com/albums/Game-of-thrones/Season-2-scripts
+
+https://genius.com/Game-of-thrones-winter-is-coming-annotated
+
+https://genius.com/Game-of-thrones-the-kingsroad-annotated
+
+Import data
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+deaths.df.long <- readRDS("interim_output/characters.death.long.01.RDS")
+
+
+```
+
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+episode.list <- deaths.df.long %>% select(season, episode_name) %>% unique()
+
+episode.list %<>%
+  mutate(episode_name = episode_name %>% 
+           str_replace_all(pattern = "[[:punct:]]", replacement = "") %>%
+           tolower() %>%
+           str_trim(side = "left") %>%
+           str_replace_all(pattern = " ", replacement = "-"))
+
+```
+
+
+Try links for season 1
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+links.season1 <- episode.list %>%
+  filter(season == "season_1") %>%
+  mutate(link. = str_c("https://genius.com/Game-of-thrones", 
+                       episode_name, 
+                       "annotated", sep = "-"))
+
+```
+
+Try first episode
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+episode.transcript <- vector(mode="list", length=nrow(links.season1))
+
+name.episode <- vector(mode = "character", 1)
+
+for(i in 1:nrow(links.season1)){
+  
+  name.episode <- links.season1[[2]][[i]]
+  
+episode.transcript[[name.episode]]  <- html(links.season1[[3]][[i]])
+  
+}
+  
+```

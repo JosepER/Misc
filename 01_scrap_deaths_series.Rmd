@@ -8,6 +8,7 @@ output:
 
 ```{r warning=FALSE, message=FALSE}
 
+library(knitr)
 library(xml2)
 library(rebus)
 library(stringr)
@@ -64,7 +65,7 @@ death.list [[nodes.df[[i,"season"]]]] <- death.web %>%
 
 ```
 
-```{r warning=FALSE, message=FALSE}
+```{r warning=FALSE, results = 'hide', message=FALSE}
 
 death.list %<>% 
   map(function(x) {str_split(x, pattern = rebus::or("\n.","\u2022") , simplify = T) %>%
@@ -78,19 +79,63 @@ death.list
 ```
 
 
-```{r eval=FALSE, warning=FALSE, message=FALSE}
+```{r eval=TRUE, results = 'hide', warning=FALSE, message=FALSE}
 
-season.one %<>%
-   
+death.df <- bind_rows(death.list, .id = "season")
 
-season.one[["episode_name"]] %<>%
-  str_replace_all(pattern = optional(" ") %R% "\"", replacement = "")
+death.df %<>%
+  map_df(gsub, pattern = "^$", replacement = NA_character_)
+ 
+death.df
+
+```
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+rm(death.list, death.web, nodes.df)
 
 ```
 
+# Exploration
 
+Check number of character deaths by season and ratio by number of episodes.
 
+```{r eval=TRUE, warning=FALSE, message=FALSE}
 
+number.episodes <- death.df %>%
+  group_by(season) %>%
+  summarise(n_episodes = episode_number %>% as.numeric %>% max)
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+death.df.long <- death.df %>%
+  gather(key = "key", value = "character", V2:V12) %>%
+  select(-key) %>%
+  arrange(season, episode_number) %>%
+  filter(!is.na(character))
+
+death.df.long %>% kable 
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+death.df.long %>%
+  count(season) %>%
+  left_join(number.episodes, by = "season") %>%
+  rename(total_deaths = n ) %>%
+  mutate(deaths_by_episode = (total_deaths/n_episodes) %>% round(1) )
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+saveRDS(death.df, "interim_output/characters.death.wide.01.RDS")
+
+saveRDS(death.df.long, "interim_output/characters.death.long.01.RDS")
+
+```
 
 
 
