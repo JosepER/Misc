@@ -5,7 +5,10 @@ output: html_notebook
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
+<<<<<<< HEAD
 library(tidytext)
+=======
+>>>>>>> 6107bf288d9531856d4687c8a9ea5bc9ae09e357
 library(knitr)
 library(xml2)
 library(rebus)
@@ -58,6 +61,7 @@ links.season1 <- episode.list %>%
 
 ```
 
+<<<<<<< HEAD
 Try download first season
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
@@ -65,6 +69,12 @@ episode.transcript <- vector(mode="list",
                              length=nrow(links.season1))
 
 names(episode.transcript) <- links.season1[[2]]
+=======
+Try first episode
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+episode.transcript <- vector(mode="list", length=nrow(links.season1))
+>>>>>>> 6107bf288d9531856d4687c8a9ea5bc9ae09e357
 
 name.episode <- vector(mode = "character", 1)
 
@@ -76,6 +86,7 @@ episode.transcript[[name.episode]]  <- html(links.season1[[3]][[i]])
   
 }
   
+<<<<<<< HEAD
 ```
 
 
@@ -197,3 +208,6 @@ table(first.transcript.df$names_speakers) %>%
 
 ```
 
+=======
+```
+>>>>>>> 6107bf288d9531856d4687c8a9ea5bc9ae09e357
