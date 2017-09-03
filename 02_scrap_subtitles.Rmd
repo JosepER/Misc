@@ -5,6 +5,7 @@ output: html_notebook
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
+library(tidytext)
 library(knitr)
 library(xml2)
 library(rebus)
@@ -57,10 +58,13 @@ links.season1 <- episode.list %>%
 
 ```
 
-Try first episode
+Try download first season
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-episode.transcript <- vector(mode="list", length=nrow(links.season1))
+episode.transcript <- vector(mode="list", 
+                             length=nrow(links.season1))
+
+names(episode.transcript) <- links.season1[[2]]
 
 name.episode <- vector(mode = "character", 1)
 
@@ -73,3 +77,123 @@ episode.transcript[[name.episode]]  <- html(links.season1[[3]][[i]])
 }
   
 ```
+
+
+Try cleaning first episode
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+first.transcript <- episode.transcript[[1]] %>%
+  html_node("p") %>%
+  html_text
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.first.episode <- first.transcript %>%
+  str_extract_all(pattern = rebus::or("[[:upper:]]+ [[:upper:]]+:", "[[:upper:]]+:")) %>%
+  unlist %>% str_replace_all(pattern = ":", replacement = "") %>% unique %>% sort
+
+```
+
+Check Royce and luwin
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+two.words.names <- characters.first.episode %>%
+  str_match(pattern = "[[:upper:]]+ " %R%  rebus::capture("[[:upper:]]+")) %>%
+  as_data_frame %>%
+  filter(!is.na(V1) & !is.na(V2))
+
+two.words.names
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+repeated.names <- two.words.names[two.words.names$V2 %in% characters.first.episode,]
+
+repeated.names %<>%
+  rename(two_words_names = V1,
+         one_word_names = V2)
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+first.transcript %>% print()
+
+```
+
+
+First try to split each sentence with author
+
+```{r eval=FALSE, warning=FALSE, message=FALSE}
+
+
+first.transcript.split <- str_split(first.transcript, pattern = capture(rebus::or("\n[[:upper:]]+:","\n[[:upper:]]+ [[:upper:]]+:", "[[:upper:]]+:", "[[:upper:]]+ [[:upper:]]+:")) ) 
+
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+names.speakers <- str_match_all(first.transcript, pattern = rebus::or("\n[[:upper:]]+:","\n[[:upper:]]+ [[:upper:]]+:", "[[:upper:]]+:", "[[:upper:]]+ [[:upper:]]+:") ) %>%  
+  unlist %>%
+  str_replace_all(pattern = rebus::or("^[[:cntrl:]]", "[[:punct:]]$"), replacement = "")
+
+first.transcript.split <- str_split(first.transcript, pattern = capture(rebus::or("\n[[:upper:]]+:","\n[[:upper:]]+ [[:upper:]]+:", "[[:upper:]]+:", "[[:upper:]]+ [[:upper:]]+:")) ) %>%
+  unlist %>%
+  str_replace_all(pattern = rebus::or("\n"), replacement = "")
+
+names.speakers %>% head(20)
+
+first.transcript.split %>% head(6)
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+first.transcript.df <- data_frame(names_speakers = c(NA,names.speakers), 
+                                  text = first.transcript.split  )
+
+```
+
+
+Replace names of repeated authors with short name
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+first.transcript.df %<>%
+  left_join(repeated.names, by = c("names_speakers" = "two_words_names")) %>%
+  mutate(names_speakers = if_else(!is.na(one_word_names), 
+                                  true = one_word_names,
+                                  false = names_speakers)) %>%
+  select(-one_word_names)
+
+```
+
+
+```{r eval=FALSE, warning=FALSE, message=FALSE}
+
+first.transcript.df %>% knitr::kable()
+
+first.transcript.df
+
+```
+
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+first.transcript.df %>%
+  write_delim("interim_output/first_season_transcript.txt", delim = "|")
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+table(first.transcript.df$names_speakers) %>%
+  sort(decreasing = T)
+
+```
+
