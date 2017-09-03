@@ -1,14 +1,15 @@
 ---
-title: "R Notebook"
+title: "Scrap and clean episode transcripts"
 output: html_notebook
 ---
 
+
+Scrap and clean episode transcripts from genius.com
+
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-<<<<<<< HEAD
+library(httr)
 library(tidytext)
-=======
->>>>>>> 6107bf288d9531856d4687c8a9ea5bc9ae09e357
 library(knitr)
 library(xml2)
 library(rebus)
@@ -19,13 +20,6 @@ library(tidyverse)
 
 ```
 
-https://genius.com/albums/Game-of-thrones/Season-1-scripts
-
-https://genius.com/albums/Game-of-thrones/Season-2-scripts
-
-https://genius.com/Game-of-thrones-winter-is-coming-annotated
-
-https://genius.com/Game-of-thrones-the-kingsroad-annotated
 
 Import data
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
@@ -38,66 +32,252 @@ deaths.df.long <- readRDS("interim_output/characters.death.long.01.RDS")
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-episode.list <- deaths.df.long %>% select(season, episode_name) %>% unique()
+if(!"episode_list.RDS" %in% list.files("interim_output/")){
+  
+episode.list <- read_html("https://en.wikipedia.org/wiki/List_of_Game_of_Thrones_episodes")
 
 episode.list %<>%
-  mutate(episode_name = episode_name %>% 
-           str_replace_all(pattern = "[[:punct:]]", replacement = "") %>%
-           tolower() %>%
-           str_trim(side = "left") %>%
-           str_replace_all(pattern = " ", replacement = "-"))
+  html_nodes( ".summary") %>%
+  html_text() %>%
+  str_replace_all(pattern = rebus::or("[[:punct:]]", "[[:cntrl:]]"),
+                  replacement = "")
 
-```
+episode.list %>%
+  write_rds("interim_output/episode_list.RDS")
 
-
-Try links for season 1
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-links.season1 <- episode.list %>%
-  filter(season == "season_1") %>%
-  mutate(link. = str_c("https://genius.com/Game-of-thrones", 
-                       episode_name, 
-                       "annotated", sep = "-"))
-
-```
-
-<<<<<<< HEAD
-Try download first season
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-episode.transcript <- vector(mode="list", 
-                             length=nrow(links.season1))
-
-names(episode.transcript) <- links.season1[[2]]
-=======
-Try first episode
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-episode.transcript <- vector(mode="list", length=nrow(links.season1))
->>>>>>> 6107bf288d9531856d4687c8a9ea5bc9ae09e357
-
-name.episode <- vector(mode = "character", 1)
-
-for(i in 1:nrow(links.season1)){
+}else{
   
-  name.episode <- links.season1[[2]][[i]]
-  
-episode.transcript[[name.episode]]  <- html(links.season1[[3]][[i]])
+episode.list <- read_rds("interim_output/episode_list.RDS")  
   
 }
-  
-<<<<<<< HEAD
+
 ```
+
+There seem to be two different patterns in the links of genius.com
+Ones end with 'script-annotated' and others just with 'annotated'.
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+links.all.seasons.1 <- episode.list %>%
+  tolower() %>%
+  str_replace_all(pattern = " ", replacement = "-") %>%
+  str_c("https://genius.com/Game-of-thrones", ., "annotated", sep = "-")
+
+links.all.seasons.2 <- episode.list %>%
+  tolower() %>%
+  str_replace_all(pattern = " ", replacement = "-") %>%
+  str_c("https://genius.com/Game-of-thrones", ., "script","annotated", sep = "-")
+
+links.all.seasons.df <- data_frame(link_1 = links.all.seasons.1,
+                                   link_2 = links.all.seasons.2)
+
+```
+
+
+Check if links are valid (not all episodes are transcribed in genius.com webpage)
+Spot missing transcribed episodes.
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+if(!"valid_transcript_links.RDS" %in% list.files("interim_output")){
+
+valid.links.1 <- links.all.seasons.df$link_1 %>%
+  map_lgl(url_success) 
+
+valid.links.2 <- vector(mode = "logical", length = length(valid.links.1))
+
+valid.links.2[valid.links.1 == F] <- links.all.seasons.df$link_2[valid.links.1 == F] %>%
+  map_lgl(url_success)
+  
+links.all.seasons.df %<>%
+  bind_cols(valid_links_1 = valid.links.1,
+            valid_links_2 = valid.links.2)
+
+valid.links <- if_else(links.all.seasons.df$valid_links_1 == T,
+                       true = links.all.seasons.df$link_1,
+                       false = if_else(links.all.seasons.df$valid_links_2 == T,
+                                       true = links.all.seasons.df$link_2,
+                                       false = "missing episode"))
+
+valid.links %>%
+  write_rds(path = "interim_output/valid_transcript_links.RDS")
+
+}else{
+  
+  valid.links <- read_rds(path = "interim_output/valid_transcript_links.RDS")
+  
+}
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+(valid.links == "missing episode") %>% sum()
+
+valid.links
+
+```
+
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+season.vector <- c(str_c("season_", rep(1:6, 10)), rep("season_7", 7)) %>% sort
+
+episode.number.vector <- c(rep(1:10, 6), rep(1:7))
+
+episode.list.df <- data_frame(season = season.vector,
+                              episode_number = episode.number.vector,
+                              episode_name = episode.list,
+                              link = valid.links)
+
+episode.list.df
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+if(!"all_transcripts.RDS" %in% list.files("interim_output/")){
+
+all.transcripts <- episode.list.df$link[which(episode.list.df$link != "missing episode")] %>%
+  map(function(x){read_html(x) %>%
+  html_nodes(".lyrics p") %>%
+  html_text })
+
+ all.transcripts %>% 
+   write_rds(path = "interim_output/all_transcripts.RDS")
+ 
+}else{
+  
+  all.transcripts <- read_rds("interim_output/all_transcripts.RDS")
+  
+}
+ 
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+all.transcripts %<>%
+  map_chr(function(x){x %>% unlist %>% str_c(collapse = "_") })
+
+episode.list.df$transcript <- NA
+
+episode.list.df$transcript[episode.list.df$link != "missing episode"] <- all.transcripts
+
+rm(all.transcripts)
+
+```
+
+Spot character names in transcripts
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+all.characters <- episode.list.df$transcript %>%
+  str_extract_all(pattern = rebus::or("[[:upper:]]+ [[:upper:]]+:", "[[:upper:]]+:")) %>%
+  unlist %>% str_replace_all(pattern = ":", replacement = "") %>% unique %>% sort
+
+all.characters
+
+```
+
+Careful! This is not the final count. The only purpose here should be to help data cleaning.
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+all.characters.df <- data_frame(name = all.characters,
+                                count = map_dbl(all.characters, str_count))
+
+all.characters.df
+```
+
+
+patterns to remove names: all , prostitute, EVERYBODY EVERYONE
+
+"ALL"              
+  [6] "ALL THREE"         "ALL TOGETHER"
+
+"MELISANDRE"       
+[191] "MELISDANDRE" MISSANDEI?
+
+"ALLISER"           "ALLISER THORNE"    "ALLISER THRONE"   
+ [11] "ALLISTER"
+ 
+ 
+ "BRAN"              "BRAND"?
+ 
+ CROWD
+ 
+ "DAENERYS"          "DAERNEYS" "DANERYS"  
+
+"DARIO"             "DARRIO" 
+
+
+"ED"                "EDD"  NED STARK??             
+
+"ELARIA"            "ELLARIA"          
+ [86] "ELLIA"   
+ 
+ 
+ BYSTANDERS
+ 
+ 
+ GREY WORM  GREYWORM
+ 
+  PLEASE NOTE	(out)  PYCELL PYCELLE
+  
+  
+  QYBURN QYBURNS
+  
+  
+  RAMSAY RAMSEY
+  
+  
+The safest thing to do is to import a list of characters and try to match transcripts to these.
+Then remove unmatched characters.
+
+https://en.wikipedia.org/wiki/List_of_Game_of_Thrones_characters
+
+
+
+
+
+
+
+
+  
+
+Spot repeated character names with two words <- double-check this process
+(i.e. they appear with name + lastname or only name)
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+two.words.names <- all.characters %>%
+  str_match(pattern = "[[:upper:]]+ " %R%  rebus::capture("[[:upper:]]+")) %>%
+  as_data_frame %>%
+  filter(!is.na(V1) & !is.na(V2))
+
+two.words.names
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+repeated.names <- two.words.names[two.words.names$V2 %in% all.characters,]
+
+repeated.names %<>%
+  rename(two_words_names = V1,
+         one_word_names = V2)
+
+repeated.names
+
+```
+
+All together? I will have to manually check the names! 
+
+What to do with characters such as young Ned?
+
+Do characters appear after they die? If yes, I should be careful. Look at the pattern. I don't think I want to include as participation if they appear after having died.
+
+
+
+Try first episode
 
 
 Try cleaning first episode
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-first.transcript <- episode.transcript[[1]] %>%
-  html_node("p") %>%
-  html_text
-
-```
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
@@ -208,6 +388,4 @@ table(first.transcript.df$names_speakers) %>%
 
 ```
 
-=======
-```
->>>>>>> 6107bf288d9531856d4687c8a9ea5bc9ae09e357
+
