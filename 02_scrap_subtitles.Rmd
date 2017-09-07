@@ -166,6 +166,7 @@ rm(all.transcripts)
 ```
 
 Spot character names in transcripts
+What about characters that are word + word + word
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 all.characters <- episode.list.df$transcript %>%
