@@ -1,0 +1,61 @@
+---
+title: "02_scrap_list_characters"
+output: html_notebook
+---
+
+Scrap and clean episode transcripts from https://en.wikipedia.org/wiki/List_of_Game_of_Thrones_characters
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+library(httr)
+library(tidytext)
+library(knitr)
+library(xml2)
+library(rebus)
+library(stringr)
+library(rvest)
+library(magrittr)
+library(tidyverse)
+
+```
+
+
+Download webpage
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+if(!"characters_list.RDS" %in% list.files("interim_output/")){
+
+characters <- read_html("https://en.wikipedia.org/wiki/List_of_Game_of_Thrones_characters")
+
+characters %>% 
+  write_rds("interim_output/characters_list.RDS")
+
+}else{
+  
+characters <- read_rds("interim_output/characters_list.RDS")
+  
+}
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters %<>%
+  html_nodes( ".column-width li") %>%
+  html_text()
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters %>% 
+  str_match_all(pattern = "^.*" %R% " as" %R%  optional(one_or_more(rebus::or(".*", " "))) %R% capture(one_or_more(" [[:upper:]]" %R% WRD)) %R% optional(" ") %R% END)
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters %>% 
+  str_match_all(pattern = ".* as " %R% optional("the ") %R% capture(".*" %R% optional(" ") %R% optional(".*")) )
+
+```
