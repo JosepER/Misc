@@ -112,7 +112,7 @@ number.episodes <- death.df %>%
 death.df.long <- death.df %>%
   gather(key = "key", value = "character", V2:V12) %>%
   select(-key) %>%
-  arrange(season, episode_number) %>%
+  arrange(season, episode_number %>% as.numeric %>%
   filter(!is.na(character))
 
 death.df.long %>% kable 

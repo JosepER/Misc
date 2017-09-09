@@ -19,43 +19,148 @@ library(tidyverse)
 
 ```
 
-
-Download webpage
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-if(!"characters_list.RDS" %in% list.files("interim_output/")){
+characters.dead <- readRDS("interim_output/characters.death.long.01.RDS") 
+
+```
+
+Download webpage
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 characters <- read_html("https://en.wikipedia.org/wiki/List_of_Game_of_Thrones_characters")
 
 characters %>% 
-  write_rds("interim_output/characters_list.RDS")
-
-}else{
-  
-characters <- read_rds("interim_output/characters_list.RDS")
-  
-}
+  write_xml("interim_output/characters_list.xml")
 
 ```
 
+**Main characters**
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-characters %<>%
-  html_nodes( ".column-width li") %>%
+main.characters <- read_html("https://en.wikipedia.org/wiki/List_of_Game_of_Thrones_characters") %>% 
+  xml_find_all("//table") %>%
+  html_table(fill = T) %>%
+  .[[5]] 
+
+main.characters %<>% 
+  .[2:nrow(main.characters),2] %>%
+  str_replace_all(pattern = " \"" %R% ".*" %R% "\"", "" )
+
+main.characters %>% sort()
+
+```
+
+**Side characters**
+From second list (below), which descrives where characters were introduced.
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+side.characters <- characters %>%
+  rvest::html_nodes( ".column-width li") %>%
   html_text()
 
+side.characters %<>% 
+  str_match_all(pattern = "^.*" %R% " as" %R%  optional(one_or_more(rebus::or(".*", " "))) %R% capture(one_or_more(" [[:upper:]]" %R% WRD)) %R% optional(" ") %R% END) %>%
+  map_chr(function(x){x[2]})
+  
+side.characters <- side.characters[!is.na(side.characters)]
+
+side.characters <- c(side.characters, "Three-eyed Raven", "Aerys Targaryen")
+
+side.characters %<>% sort()
+
+side.characters
+
+```
+
+
+Some characters are 'young' versions of a main GoT character. We should delete those.
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+side.characters.young <- side.characters %>% 
+  str_subset(rebus::or("young", "child")) %>% 
+  str_match(rebus::or("young ", "child ") %R% capture(".*")) %>%
+  .[,2]
+  
+side.characters.young %>% unique
+
+(side.characters.young %>% unique) %in% c(side.characters, main.characters)
+
+```
+
+Side characters from table
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+side.characters.2 <- read_html("https://en.wikipedia.org/wiki/List_of_Game_of_Thrones_characters") %>% 
+  xml_find_all("//table") %>%
+  html_table(fill = T) %>%
+  .[[6]] 
+
+side.characters.2 <- side.characters.2[2:nrow(side.characters.2),2]
+
+side.characters %<>% c(side.characters.2) %>% unique
+  
+
+```
+
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.all <- c(side.characters, main.characters, side.characters.young) %>% 
+  unique() %>%
+  sort
+
 ```
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-characters %>% 
-  str_match_all(pattern = "^.*" %R% " as" %R%  optional(one_or_more(rebus::or(".*", " "))) %R% capture(one_or_more(" [[:upper:]]" %R% WRD)) %R% optional(" ") %R% END)
+characters.all.clean <- characters.all[c(-1,-2)] 
+
+characters.all.clean <- characters.all.clean[!characters.all.clean %>%
+  str_detect(pattern = rebus::or("young ", "child ") )] 
+
+characters.all.clean %<>%
+  str_replace(pattern = rebus::or("the ", "The ") %R% optional(rebus::or("giant ", "second ")), replacement = "") %>%
+  str_replace(pattern =" and various White Walkers", replacement = ""   )
+
+characters.all.clean <- characters.all.clean[characters.all.clean != "various White Walkers"]
+
+characters.all.clean %>% sort()
+
+```
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.all.clean %<>% c("Adrack Humble", "Akho", "Axell Florent", 
+                      "Barra", "Borba", "Dongo", "Donnel Hill", "Emmon Cuy",
+                      "Frey-Bolton baby", "Gared", "Ghita", "Grey Wind",
+                      "Griezhen mo Ullhor", "Guymon", "Harker", "Heward", "Catspaw assassin",
+                      "Caleotte", "Cooper", "Hoster Tully", "Iggo", "Jack Bulwer",
+                      "Jafer Flowers", "Joyeuse Erenford", "Kegs") #in
 
 ```
 
+
+
+Clean list of dead characters
+If a character does not appear in any episode and is just mentioned as dead, exclude it.
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-characters %>% 
-  str_match_all(pattern = ".* as " %R% optional("the ") %R% capture(".*" %R% optional(" ") %R% optional(".*")) )
+characters.dead %<>% filter(!character %in% c("A white walker" , "Bannen", "Baratheon general",
+                                              "Billy", "Despondent man", "Dornish guards", #out
+                                              "Drennan", "Frey soldiers", "Great master", "Jack",
+                                              "Karstark lookout"))
+
+characters.dead %<>%
+  mutate(character = character %>% 
+           str_replace_all(pattern = rebus::or("Brother ", " and the villagers"), 
+                           replacement = "") %>%
+           str_replace(pattern = "Eddard Ned Stark", replacement = "Eddard Stark"),
+         str_replace(pattern = "Jeor Morment", replacement = "Jeor Mormont")
+         )
+
+(characters.dead$character[!characters.dead$character %in% characters.all.clean]) %>% sort
+
 
 ```
