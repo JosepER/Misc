@@ -122,7 +122,7 @@ characters.all.clean <- characters.all.clean[!characters.all.clean %>%
   str_detect(pattern = rebus::or("young ", "child ") )] 
 
 characters.all.clean %<>%
-  str_replace(pattern = rebus::or("the ", "The ", "Maester ") %R% optional(rebus::or("giant ", "second ")), replacement = "") %>%
+  str_replace(pattern = rebus::or("the ", "The ", "Maester ", "Grand Maester ") %R% optional(rebus::or("giant ", "second ")), replacement = "") %>%
   str_replace(pattern = rebus::or(" and various White Walkers", " of Vale"), replacement = ""   )
 
 characters.all.clean <- characters.all.clean[characters.all.clean != "various White Walkers"]
@@ -147,7 +147,9 @@ characters.all.clean %<>% c("Adrack Humble", "Akho", "Axell Florent",
                       "Summer", "Talisa Stark", "Tansy", "Tickler", "Tom",
                       "Torrhen Karstark", "Vardis Egen", "Varly", "Vayon Poole",
                       "Viserion", "Wallen", "Wendel Manderly", "White Rat", 
-                      "Willem Lannister" , "Willis Wode", "Wyl") #in
+                      "Willem Lannister" , "Willis Wode", "Wyl", "Bobono", 
+                      "Clarenzo", "Daisy", "Fennesz", "Gatins", "Belicho Paenymion",
+                      "Lollys Stokeworth", "Marwyn") #in
 
 ```
 
@@ -194,7 +196,8 @@ characters.dead %<>%  filter(!character %in% c("Thirteen","Torturer"))
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-
+characters.dead %>%
+  count(season)
 
 ```
 

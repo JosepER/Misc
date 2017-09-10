@@ -7,6 +7,7 @@ output: html_notebook
 Scrap and clean episode transcripts from genius.com
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
+rm(list = ls())
 
 library(httr)
 library(tidytext)
@@ -24,8 +25,9 @@ library(tidyverse)
 Import data
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-deaths.df.long <- readRDS("interim_output/characters.death.long.01.RDS")
+characters.dead <- readRDS("interim_output/characters.death.long.02.RDS")
 
+characters.all <- readRDS("interim_output/characters.all.02.RDS")
 
 ```
 
@@ -75,6 +77,7 @@ links.all.seasons.df <- data_frame(link_1 = links.all.seasons.1,
 
 Check if links are valid (not all episodes are transcribed in genius.com webpage)
 Spot missing transcribed episodes.
+_To update list of transcripts, delete the output of this chunk of code and run it_
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 if(!"valid_transcript_links.RDS" %in% list.files("interim_output")){
@@ -166,26 +169,104 @@ rm(all.transcripts)
 ```
 
 Spot character names in transcripts
-What about characters that are word + word + word
+What about characters that are word + word + word?
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-all.characters <- episode.list.df$transcript %>%
+characters.transcripts <- episode.list.df$transcript %>%
   str_extract_all(pattern = rebus::or("[[:upper:]]+ [[:upper:]]+:", "[[:upper:]]+:")) %>%
   unlist %>% str_replace_all(pattern = ":", replacement = "") %>% unique %>% sort
 
-all.characters
+characters.transcripts
 
 ```
 
 Careful! This is not the final count. The only purpose here should be to help data cleaning.
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-all.characters.df <- data_frame(name = all.characters,
-                                count = map_dbl(all.characters, str_count))
+characters.transcripts.df <- data_frame(name = characters.transcripts,
+                                count = map_dbl(characters.transcripts, str_count))
 
-all.characters.df
+characters.transcripts.df
 ```
 
+Address pattern of 'young' in transctipts.
+lady, maester, ser, lord
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df %<>%
+  mutate(name = name %>% str_replace(pattern = rebus::or("LORD ", "MAESTER ",
+                                                         "SER ", " YOUNG ",
+                                                         "LADY ", "LADYC "),
+                                     replacement = "") )
+
+```
+
+In transcripts, many characters 
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+#toupper(characters.all) %>% sort %>% utils::View()
+
+characters.all.firstname <- characters.all %>%
+  str_match(pattern = capture("[[:upper:]][[:lower:]]+") %R% optional(" .*") %R% " [[:upper:]].+")
+
+characters.all.df <- data_frame(name_1 = characters.all, name_2 = characters.all.firstname[,2])
+
+```
+
+Clean characters from transcripts
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df %<>%
+  filter(!name %in% c("A VOICE", "ALL", "ALL THREE", "ALL TOGETHER",
+                      "ANNOUNCER", "ARCHERS", "ATTENDANT", "BANKER",
+                      "BLONDE PROSTITUTE", "BOLTON BANNERMAN", "BOLTON OFFICER"))%>%
+  mutate(name = name %>% str_replace(pattern = "AERSON", replacement = "AERON") %>%
+           str_replace(pattern = rebus::or("ALLITHORNE", "ALLITHRONE", "ALLISTER"), replacement = "ALLISER THORNE") %>%
+           str_replace(pattern = rebus::or("BAELISH", "LITTLEFINGER"), replacement = "PETYR BAELISH") %>%
+           str_replace(pattern = "BLACK WALDER", replacement = "BLACK WALDER RIVERS") %>%
+           str_replace(pattern = "BLACKFISH", replacement = toupper("Brynden Tully")) %>%
+           str_replace(pattern = "BRAND", replacement = "BRAN") %>%
+           str_replace(pattern = "BRIENNE", replacement = "BRIENNE OF TARTH") %>%
+           str_replace(pattern = rebus::or("CASSEL"), replacement = "RODRIK CASSEL") %>%
+           str_replace(pattern = rebus::or("DAERNEYS", "DANERYS"), replacement = "DAENERYS") %>%
+           str_replace(pattern = rebus::or("DARIO", "DARRIO"), replacement = toupper("Daario Naharis")) %>%
+           str_replace(pattern = rebus::or("DOLOROUS EDD", "EDDARDDISON TOLLETT"), replacement = "EDDISON TOLLETT") %>%
+           str_replace(pattern = rebus::or(exactly("ED"), exactly("EDD"), exactly("EDDARDD")), replacement = "EDDARD") %>%
+           str_replace(pattern = rebus::or("ELARIA", "ELLIA"), replacement = "ELLARIA SAND") %>%
+           str_replace(pattern = ("EYED RAVEN"), replacement = "THREE-EYED RAVEN") %>%
+           str_replace(pattern = ("GREYWORM"), replacement = "GREY WORM") %>%
+           str_replace(pattern = "ROYCE", replacement = "WAYMAR ROYCE") %>%
+           str_replace(pattern = or::rebus("PYCELL", "PYRCELLE"), replacement = "PYCELLE") %>%
+           str_replace(pattern = "MELISDANDRE", replacement = "MELISANDRE") %>%
+           str_replace(pattern = "MHAEGAN", replacement = "MHAEGEN") %>%
+           str_replace(pattern = "MOSADOR", replacement = "MOSSADOR") %>%
+           str_replace(pattern = "MOUNTAIN", replacement = "GREGOR CLEGANE") %>%
+           str_replace(pattern = "OLEANNA", replacement = "OLENNA") 
+           
+           )
+#OTHELL YARWICK
+
+```
+
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df$name[!characters.transcripts.df$name %in% 
+                                 c(toupper(characters.all.df$name_1), toupper(characters.all.df$name_2))]
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+map(episode.list.df$transcript, function(x){str_detect(x, pattern = "EDDARDDARDMURE")}) %>% unlist %>% which()
+
+```
+
+
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+stop("Atura't")
+```
 
 patterns to remove names: all , prostitute, EVERYBODY EVERYONE
 
