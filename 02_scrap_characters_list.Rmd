@@ -149,7 +149,8 @@ characters.all.clean %<>% c("Adrack Humble", "Akho", "Axell Florent",
                       "Viserion", "Wallen", "Wendel Manderly", "White Rat", 
                       "Willem Lannister" , "Willis Wode", "Wyl", "Bobono", 
                       "Clarenzo", "Daisy", "Fennesz", "Gatins", "Belicho Paenymion",
-                      "Lollys Stokeworth", "Marwyn") #in
+                      "Lollys Stokeworth", "Marwyn", "Portan", "Sand Snakes",
+                      "Vance Corbray", "Razdal mo Eraz") #in
 
 ```
 

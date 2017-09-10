@@ -206,6 +206,8 @@ In transcripts, many characters
 
 #toupper(characters.all) %>% sort %>% utils::View()
 
+#'Thoros of Myr' it fails to capture 'Thoros'!!
+
 characters.all.firstname <- characters.all %>%
   str_match(pattern = capture("[[:upper:]][[:lower:]]+") %R% optional(" .*") %R% " [[:upper:]].+")
 
@@ -236,18 +238,26 @@ characters.transcripts.df %<>%
            str_replace(pattern = ("EYED RAVEN"), replacement = "THREE-EYED RAVEN") %>%
            str_replace(pattern = ("GREYWORM"), replacement = "GREY WORM") %>%
            str_replace(pattern = "ROYCE", replacement = "WAYMAR ROYCE") %>%
-           str_replace(pattern = or::rebus("PYCELL", "PYRCELLE"), replacement = "PYCELLE") %>%
+           str_replace(pattern = rebus::or("PYCELL", "PYRCELLE", "PYCELLEE"), replacement = "PYCELLE") %>%
            str_replace(pattern = "MELISDANDRE", replacement = "MELISANDRE") %>%
            str_replace(pattern = "MHAEGAN", replacement = "MHAEGEN") %>%
            str_replace(pattern = "MOSADOR", replacement = "MOSSADOR") %>%
            str_replace(pattern = "MOUNTAIN", replacement = "GREGOR CLEGANE") %>%
-           str_replace(pattern = "OLEANNA", replacement = "OLENNA") 
+           str_replace(pattern = "OLEANNA", replacement = "OLENNA") %>%
+           str_replace(pattern = "OTHELL YARWICK", replacement = "OTHELL YARWYCK") %>%
+           str_replace(pattern = rebus::or("SAM", "SAMMY"), replacement = "SAMWELL TARLY") %>%
+           str_replace(pattern = "SAAN", replacement = "SALLADHOR SAAN") %>%
+           str_replace(pattern = "QYBURNS", replacement = "QYBURN") %>%
+           str_replace(pattern = "RAMSEY", replacement = "RAMSAY") %>%
+           str_replace(pattern = "ROZ", replacement = "ROS") %>%
+           str_replace(pattern = "SLYNT", replacement = "JANOS SLYNT") %>%
+           str_replace(pattern = "THE HOUND", replacement = "SANDOR CLEGANE")
            
            )
 #OTHELL YARWICK
 
 ```
-
+Salladhor Saan
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
