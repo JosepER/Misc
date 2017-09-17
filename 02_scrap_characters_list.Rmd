@@ -102,7 +102,6 @@ side.characters.2 <- side.characters.2[2:nrow(side.characters.2),2]
 
 side.characters %<>% c(side.characters.2) %>% unique
   
-
 ```
 
 

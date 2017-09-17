@@ -194,24 +194,37 @@ lady, maester, ser, lord
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 characters.transcripts.df %<>%
-  mutate(name = name %>% str_replace(pattern = rebus::or("LORD ", "MAESTER ",
-                                                         "SER ", " YOUNG ",
+  mutate(name = name %>% str_replace_all(pattern = rebus::or("LORD ", "MAESTER ",
+                                                         "SER ", "YOUNG ",
                                                          "LADY ", "LADYC "),
                                      replacement = "") )
 
 ```
 
-In transcripts, many characters 
+
+
+In transcripts, many characters appear only with their first name (i.e. last name is excluded). We need to compute the first name of all characters and match the names in transcripts with either first name or full name
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-#toupper(characters.all) %>% sort %>% utils::View()
-
-#'Thoros of Myr' it fails to capture 'Thoros'!!
-
 characters.all.firstname <- characters.all %>%
-  str_match(pattern = capture("[[:upper:]][[:lower:]]+") %R% optional(" .*") %R% " [[:upper:]].+")
+  str_match(pattern = capture("[[:upper:]][[:lower:]]+") %R% optional(" " %R% "\\w+") %R% " [[:upper:]].+")
 
-characters.all.df <- data_frame(name_1 = characters.all, name_2 = characters.all.firstname[,2])
+# The previous regex fails to capture the first name of characters with names with three or more pieces such as:
+# Brienne of Tarth; Hizdahr zo Loraq; Thoros of Myr
+# I can do that with another regex.
+
+characters.all.firstname.alternative <-characters.all %>%
+  str_match(pattern = capture("[[:upper:]][[:lower:]]+") %R% " .+" %R%  " [[:upper:]].+")
+
+characters.all.df <- data_frame(name_1 = characters.all, 
+                                name_2 = characters.all.firstname[,2],
+                                name_3 = characters.all.firstname.alternative[,2])
+
+characters.all.df %<>%
+  mutate(name_2 = if_else(is.na(name_2),
+                          true = name_3,
+                          false =name_2 )) %>%
+  select(-name_3)
 
 ```
 
@@ -265,6 +278,30 @@ characters.transcripts.df$name[!characters.transcripts.df$name %in%
                                  c(toupper(characters.all.df$name_1), toupper(characters.all.df$name_2))]
 
 ```
+
+Optional: export unmatched character names to review them manually.
+```{r eval=FALSE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df$name[!characters.transcripts.df$name %in% 
+                                 c(toupper(characters.all.df$name_1), toupper(characters.all.df$name_2))] %>%
+  as_data_frame %>% 
+  write_excel_csv("interim_output/unmatched_names.csv")
+
+```
+
+
+Optional: import manually reviewed unmatched character names.
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+unmatched <- read_delim("interim_output/unmatched_names_MOD.csv",
+                        delim = ";") %>%
+  filter(not_ignorable == 1) %$%
+  value
+
+unmatched
+
+```
+
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 

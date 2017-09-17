@@ -1,0 +1,156 @@
+---
+title: "Power analysis"
+output: html_notebook
+---
+
+
+
+```{r, message=FALSE, warning=FALSE}
+
+library(readxl)
+library(pwr)
+library(stringr)
+library(magrittr)
+library(tidyverse)
+
+options(scipen = 9999)
+
+```
+
+# Import gpower data
+```{r, message=FALSE, warning=FALSE}
+
+data.gpower.300 <- read_excel("Gpower.xlsx", sheet = "300_each_group")
+
+data.gpower.400 <- read_excel("Gpower.xlsx", sheet = "400_each_group")
+
+data.gpower.500 <- read_excel("Gpower.xlsx", sheet = "500_each_group")
+
+```
+
+
+```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+
+pwr.2p.test(h = 0, n = 300 )
+
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+
+power.t <- power.prop.test(n = 300, p1 = 0.5, p2 = 0.5)
+
+```
+
+```{r, message=FALSE, warning=FALSE}
+
+power.tests.300.df <- data_frame(proportion2 = seq(from = 0,to = 1, by = 0.01))
+
+```
+
+```{r, message=FALSE, warning=FALSE}
+
+power.vector50 <- vector("numeric", length(power.tests.300.df$proportion2))
+power.vector30 <- vector("numeric", length(power.tests.300.df$proportion2))
+power.vector10 <- vector("numeric", length(power.tests.300.df$proportion2))
+power.vector05 <- vector("numeric", length(power.tests.300.df$proportion2))
+
+
+for(i in seq_along(power.tests.300.df$proportion2)){
+
+  power.vector50[i] <- power.prop.test(n = 300, p1 = 0.5, p2 = power.tests.300.df$proportion2[i])$power
+  power.vector30[i] <- power.prop.test(n = 300, p1 = 0.3, p2 = power.tests.300.df$proportion2[i])$power
+  power.vector10[i] <- power.prop.test(n = 300, p1 = 0.1, p2 = power.tests.300.df$proportion2[i])$power
+  power.vector05[i] <- power.prop.test(n = 300, p1 = 0.05, p2 = power.tests.300.df$proportion2[i])$power
+  
+}
+
+power.tests.300.df %<>%
+  bind_cols(data_frame(power_vector_50 = power.vector50,
+                       power_vector_30 = power.vector30,
+                       power_vector_10 = power.vector10,
+                       power_vector_05 = power.vector05))
+
+```
+
+
+# Compare R computations with Gpower ones
+
+```{r, message=FALSE, warning=FALSE}
+
+data.gpower.300
+
+power.tests.300.df
+
+```
+
+```{r, message=FALSE, warning=FALSE}
+
+data.gpower
+
+```
+
+Differences rise to almost 8-9 points! That's too much.
+```{r, message=FALSE, warning=FALSE}
+
+power.tests.300.df %>%
+  left_join(data.gpower, by = c("proportion2" = "Proportion p1")) %>%
+  mutate(difference_prop_50 = power_vector_50 - Power_50,
+         difference_prop_30 = power_vector_30 - Power_30,
+         difference_prop_10 = power_vector_10 - Power_10) %>%
+  select(proportion2, difference_prop_50, difference_prop_30, difference_prop_10)
+
+```
+
+
+
+
+Graph as in 'G*Power'
+```{r, message=FALSE, warning=FALSE}
+
+ggplot(power.tests.300.df %>% filter(proportion2 < 0.5), aes(x = proportion2, y = power_vector_50)) +
+  geom_line()
+  
+```
+
+
+Plot power of R computations with 300 n in each group
+```{r, eval=FALSE, message=FALSE, warning=FALSE}
+
+natcen.colours <- c("#ED2C88", "#FCB645", "#00B7B4", "#CC83C2", "#B4489B")
+
+#natcen.colours <- c("0xED2C88", "0xFCB645", "0x00B7B4", "0xCC83C2", "0xB4489B")
+
+ggplot(power.tests.300.df %>% gather(key = "proportion", value = "power", -proportion2, factor_key = T), aes(x = proportion2, y = power, colour = proportion)) +
+  geom_line(size = 2) +
+  scale_x_continuous(name="Second proportion") +
+  scale_y_continuous(name="Statistical power") +
+  scale_colour_manual(values=natcen.colours, 
+                      labels=c("Proportion = 0.5", "Proportion = 0.3",
+                        "Proportion = 0.1", "Proportion = 0.05"))+ 
+  labs(col="First proportion") +
+ # scale_colour_discrete(labels=c("Proportion = 0.5", "Proportion = 0.3",
+  #                       "Proportion = 0.1", "Proportion = 0.05")) +
+  theme(text=element_text(size=16,  family="arial"))
+
+```
+
+
+Plot power of G*Power computations with 300 units in each group
+```{r, message=FALSE, warning=FALSE}
+
+natcen.colours <- c("#ED2C88", "#FCB645", "#00B7B4", "#CC83C2", "#B4489B")
+
+ggplot(data.gpower.300 %>% gather(key = "proportion", value = "power", -`Proportion p1`, factor_key = T), aes(x = `Proportion p1`, y = power, colour = proportion)) +
+  geom_line(size = 2) +
+  scale_x_continuous(name="Second proportion") +
+  scale_y_continuous(name="Statistical power") +
+  scale_colour_manual(values=natcen.colours, 
+                      labels=c("Proportion = 0.5", "Proportion = 0.3",
+                        "Proportion = 0.1", "Proportion = 0.05"))+ 
+  labs(col="First proportion") +
+  ggtitle(label = "Power analysis of differences in proportions \n across groups", subtitle = "Group n = 300") +
+  theme(text=element_text(size=16,  family="arial"))
+
+```
+
