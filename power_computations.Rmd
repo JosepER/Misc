@@ -86,7 +86,7 @@ power.tests.300.df
 
 ```{r, message=FALSE, warning=FALSE}
 
-data.gpower
+data.gpower.300
 
 ```
 
@@ -94,7 +94,7 @@ Differences rise to almost 8-9 points! That's too much.
 ```{r, message=FALSE, warning=FALSE}
 
 power.tests.300.df %>%
-  left_join(data.gpower, by = c("proportion2" = "Proportion p1")) %>%
+  left_join(data.gpower.300, by = c("proportion2" = "Proportion p1")) %>%
   mutate(difference_prop_50 = power_vector_50 - Power_50,
          difference_prop_30 = power_vector_30 - Power_30,
          difference_prop_10 = power_vector_10 - Power_10) %>%
@@ -143,8 +143,8 @@ natcen.colours <- c("#ED2C88", "#FCB645", "#00B7B4", "#CC83C2", "#B4489B")
 
 ggplot(data.gpower.300 %>% gather(key = "proportion", value = "power", -`Proportion p1`, factor_key = T), aes(x = `Proportion p1`, y = power, colour = proportion)) +
   geom_line(size = 2) +
-  scale_x_continuous(name="Second proportion") +
-  scale_y_continuous(name="Statistical power") +
+  scale_x_continuous(name="Second proportion", breaks = seq(0,1,0.1), minor_breaks = seq(0,1,0.05)) +
+  scale_y_continuous(name="Statistical power", breaks = seq(0,1,0.1)) +
   scale_colour_manual(values=natcen.colours, 
                       labels=c("Proportion = 0.5", "Proportion = 0.3",
                         "Proportion = 0.1", "Proportion = 0.05"))+ 
@@ -153,4 +153,42 @@ ggplot(data.gpower.300 %>% gather(key = "proportion", value = "power", -`Proport
   theme(text=element_text(size=16,  family="arial"))
 
 ```
+
+
+Plot power of G*Power computations with 400 units in each group
+```{r, message=FALSE, warning=FALSE}
+
+natcen.colours <- c("#ED2C88", "#FCB645", "#00B7B4", "#CC83C2", "#B4489B")
+
+ggplot(data.gpower.400 %>% gather(key = "proportion", value = "power", -`Proportion p1`, factor_key = T), aes(x = `Proportion p1`, y = power, colour = proportion)) +
+  geom_line(size = 2) +
+  scale_x_continuous(name="Second proportion", breaks = seq(0,1,0.1), minor_breaks = seq(0,1,0.05)) +
+  scale_y_continuous(name="Statistical power", breaks = seq(0,1,0.1)) +
+  scale_colour_manual(values=natcen.colours, 
+                      labels=c("Proportion = 0.5", "Proportion = 0.3",
+                        "Proportion = 0.1", "Proportion = 0.05"))+ 
+  labs(col="First proportion") +
+  ggtitle(label = "Power analysis of differences in proportions \n across groups", subtitle = "Group n = 400") +
+  theme(text=element_text(size=16,  family="arial"))
+
+```
+
+Plot power of G*Power computations with 500 units in each group
+```{r, message=FALSE, warning=FALSE}
+
+natcen.colours <- c("#ED2C88", "#FCB645", "#00B7B4", "#CC83C2", "#B4489B")
+
+ggplot(data.gpower.500 %>% gather(key = "proportion", value = "power", -`Proportion p1`, factor_key = T), aes(x = `Proportion p1`, y = power, colour = proportion)) +
+  geom_line(size = 2) +
+  scale_x_continuous(name="Second proportion", breaks = seq(0,1,0.1), minor_breaks = seq(0,1,0.05)) +
+  scale_y_continuous(name="Statistical power", breaks = seq(0,1,0.1)) +
+  scale_colour_manual(values=natcen.colours, 
+                      labels=c("Proportion = 0.5", "Proportion = 0.3",
+                        "Proportion = 0.1", "Proportion = 0.05"))+ 
+  labs(col="First proportion") +
+  ggtitle(label = "Power analysis of differences in proportions \n across groups", subtitle = "Group n = 500") +
+  theme(text=element_text(size=16,  family="arial"))
+
+```
+
 
