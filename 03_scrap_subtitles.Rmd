@@ -289,6 +289,38 @@ characters.transcripts.df$name[!characters.transcripts.df$name %in%
 
 ```
 
+Check duplicates in 'first name' that could have different 'first name' + 'last name'
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.all.df %>% head(10)
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+repeated.first.names <- characters.all.df %>%
+  count(name_2) %>%
+  filter(n > 1)
+
+repeated.first.names
+
+```
+
+Careful, there are repeated first names and these refer to different characters!
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.all.df %>%
+  filter(name_2 %in% repeated.first.names$name_2, !is.na(name_2)) %>%
+  arrange(name_1)
+
+rm(repeated.first.names)
+
+```
+
+
+
+
 
 Optional: import manually reviewed unmatched character names.
 ```{r eval=TRUE, warning=FALSE, message=FALSE}

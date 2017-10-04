@@ -3,7 +3,7 @@ title: "02_scrap_list_characters"
 output: html_notebook
 ---
 
-Scrap and clean episode transcripts from https://en.wikipedia.org/wiki/List_of_Game_of_Thrones_characters
+Scrap and clean list of characters from https://en.wikipedia.org/wiki/List_of_Game_of_Thrones_characters
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
