@@ -3,3 +3,5 @@ characters.death.wide.RDS
 first_season_transcript.csv
 first_season_transcript.txt
 valid_transcript_links1.RDS
+unclean_characters_transcripts.csv
+unclean_characters_transcripts_MOD.csv
