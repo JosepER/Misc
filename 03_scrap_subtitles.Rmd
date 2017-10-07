@@ -22,7 +22,7 @@ library(tidyverse)
 ```
 
 
-Import data
+#Import data from previous scripts
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 characters.dead <- readRDS("interim_output/characters.death.long.02.RDS")
@@ -31,7 +31,7 @@ characters.all <- readRDS("interim_output/characters.all.02.RDS")
 
 ```
 
-
+#Scrap list of GoT episodes
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 if(!"episode_list.RDS" %in% list.files("interim_output/")){
@@ -55,8 +55,13 @@ episode.list <- read_rds("interim_output/episode_list.RDS")
 
 ```
 
+# Scrap GoT transcripts from genius.com
 There seem to be two different patterns in the links of genius.com
 Ones end with 'script-annotated' and others just with 'annotated'.
+e.g. "https://genius.com/Game-of-thrones-episode-annotated" and "https://genius.com/Game-of-thrones-episode-script-annotated"
+
+## Create hypothetical links to transcript websites
+
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 links.all.seasons.1 <- episode.list %>%
@@ -75,7 +80,8 @@ links.all.seasons.df <- data_frame(link_1 = links.all.seasons.1,
 ```
 
 
-Check if links are valid (not all episodes are transcribed in genius.com webpage)
+## Check if links are valid 
+Not all episodes are transcribed in genius.com webpage!
 Spot missing transcribed episodes.
 _To update list of transcripts, delete the output of this chunk of code and run it_
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
@@ -111,6 +117,7 @@ valid.links %>%
 
 ```
 
+**06-10-2017 There seem to be 22 episodes missing!** 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 (valid.links == "missing episode") %>% sum()
@@ -119,7 +126,7 @@ valid.links
 
 ```
 
-
+## Scrap transcripts
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 season.vector <- c(str_c("season_", rep(1:6, 10)), rep("season_7", 7)) %>% sort
@@ -133,8 +140,12 @@ episode.list.df <- data_frame(season = season.vector,
 
 episode.list.df
 
+rm(valid.links, season.vector, episode.number.vector, links.all.seasons.1, links.all.seasons.2,
+   links.all.seasons.df)
+
 ```
 
+## Convert trantscripts into tidy text
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 if(!"all_transcripts.RDS" %in% list.files("interim_output/")){
@@ -155,6 +166,7 @@ all.transcripts <- episode.list.df$link[which(episode.list.df$link != "missing e
  
 ```
 
+
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 all.transcripts %<>%
@@ -164,21 +176,85 @@ episode.list.df$transcript <- NA
 
 episode.list.df$transcript[episode.list.df$link != "missing episode"] <- all.transcripts
 
+
+```
+
+###Transcripts into readable text
+This step is not strictly needed but it helps manual explorations and checks.
+**Not finished**
+```{r eval=FALSE, warning=FALSE, message=FALSE}
+
+if(!"interim_output/transcripts" %in% list.dirs("interim_output/transcripts")){
+  
+  dir.create("interim_output/transcripts")
+  
+}
+
+#for(i in 1:nrow(episode.list.df)){
+  
+ # episode.list.df
+  
+#}
+
+trial <- episode.list.df[1:3,] %>% #place a conditional to use only those that have valid transcripts
+  transpose() %>%
+  map(function(x){ 
+    
+    x$transcript %>%
+      strsplit(split = rebus::or("\n", "." %R% "[[:upper:]]+" ) ) %>%
+      unlist() %>% 
+      #data_frame() %>% 
+      print()
+      #write_delim(path = str_c("interim_output/transcripts/","transcript_", x$episode_name, ".txt"),
+       #           delim = "\t")
+    
+      }) 
+  
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
 rm(all.transcripts)
 
 ```
 
-Spot character names in transcripts
+#Spot character names in transcripts
+Transcriptions use names both in upper and lower case! 
+e.g. 
+* https://genius.com/Game-of-thrones-winter-is-coming-annotated
+* https://genius.com/Game-of-thrones-the-kingsroad-annotated
+
+Ideally, the pattern used should also be able to capture all names in characters scraped from wikipedia.
+
+Object: characters.all
+
 What about characters that are word + word + word?
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
+pattern.character.names <- rebus::or("[[:upper:]]+ [[:upper:]]+:", # upper two words
+                                     "[[:upper:]]+:", # upper single word
+                                     "[[:upper:]][[:lower:]]+ [[:upper:]][[:lower:]]+:", # lower two words
+                                     "[[:upper:]][[:lower:]]+:" # lower single word
+                                     )
+
 characters.transcripts <- episode.list.df$transcript %>%
-  str_extract_all(pattern = rebus::or("[[:upper:]]+ [[:upper:]]+:", "[[:upper:]]+:")) %>%
+  str_extract_all(pattern = pattern.character.names) %>%
   unlist %>% str_replace_all(pattern = ":", replacement = "") %>% unique %>% sort
 
 characters.transcripts
 
 ```
+
+All characters in transcripts to upper. 
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts %<>%
+  toupper() %>% 
+  unique
+
+```
+
 
 Careful! This is not the final count. The only purpose here should be to help data cleaning.
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
@@ -306,7 +382,7 @@ repeated.first.names
 
 ```
 
-Careful, there are repeated first names and these refer to different characters!
+**Careful, there are repeated first names and these refer to different characters!**
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
