@@ -3,8 +3,9 @@ title: "Scrap and clean episode transcripts"
 output: html_notebook
 ---
 
-
-Scrap and clean episode transcripts from genius.com
+Aim:
+* Scrap and clean episode transcripts from genius.com;
+* Relate all characters that were scrapped in script '02_scrap_characters_list.Rmd' to those in transcripts.
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 rm(list = ls())
@@ -227,22 +228,37 @@ e.g.
 
 Ideally, the pattern used should also be able to capture all names in characters scraped from wikipedia.
 
+There are some transcripts that use \ n pattern, others that don't
+
+
 Object: characters.all
 
 What about characters that are word + word + word?
+
+There are patterns of NAME (in valerian) e.g:
+CERSEI (sighs): Thank you so much for your kind words.
+
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-pattern.character.names <- rebus::or("[[:upper:]]+ [[:upper:]]+:", # upper two words
-                                     "[[:upper:]]+:", # upper single word
-                                     "[[:upper:]][[:lower:]]+ [[:upper:]][[:lower:]]+:", # lower two words
-                                     "[[:upper:]][[:lower:]]+:" # lower single word
-                                     )
+pattern.character.names <- rebus::or("\\.[[:alpha:]]+" %R% rebus::one_or_more(" [[:alpha:]]+") %R% ":",
+                                     "\n[[:alpha:]]+" %R% rebus::one_or_more(" [[:alpha:]]+") %R% ":",
+                                     "\n[[:alpha:]]+" %R% rebus::zero_or_more(" [[:alpha:]]+") %R% " \\(" %R% rebus::one_or_more(rebus::or("[[:alpha:]]","\\s")) %R% "\\):",
+                                     "\\.[[:alpha:]]+" %R% rebus::zero_or_more(" [[:alpha:]]+") %R% " \\(" %R% rebus::one_or_more(rebus::or("[[:alpha:]]","\\s")) %R% "\\):")
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 characters.transcripts <- episode.list.df$transcript %>%
   str_extract_all(pattern = pattern.character.names) %>%
-  unlist %>% str_replace_all(pattern = ":", replacement = "") %>% unique %>% sort
+  unlist %>% str_replace_all(pattern = rebus::or(":", "\n", "\\.", 
+                                                 "\\(" %R% rebus::one_or_more("[[:print:]]") %R% "\\)"), replacement = "") %>% 
+  unique %>% 
+  sort
 
-characters.transcripts
+rm(pattern.character.names)
+
+#characters.transcripts
 
 ```
 
@@ -252,6 +268,8 @@ All characters in transcripts to upper.
 characters.transcripts %<>%
   toupper() %>% 
   unique
+
+characters.transcripts
 
 ```
 
