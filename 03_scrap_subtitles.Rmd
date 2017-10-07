@@ -276,7 +276,7 @@ characters.transcripts
 Create a data frame with wikipedia/all character names with an identifier
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-characters.all.map.df <- data_frame(character.names.wikipedia = characters.all %>% toupper(),
+characters.all.map.df <- data_frame(character.names.wikipedia = characters.all %>% toupper() %>% sort(),
            identifier = 1:length(characters.all))
 
 characters.all.map.df %>%
@@ -287,9 +287,27 @@ characters.all.map.df %>%
 ## Do a quick clean of characters in transcripts
 
 Delete prefix such as: 'young', 'lady', 'maester', 'ser' and 'lord'.
+Careful with:
+* Removing pattern 'SER ' would cut the end of 'ALLISER';
+* Removing pattern 'LADY ' would also remove it from 'LADY CRANE', which exists in the list of all characters;
+* Removing pattern 'LORD ' would also remove it from 'LORD OF BONES', which exists in the list of all characters;
+* Removing pattern 'MAESTER ' would also remove it from 'ARCHMAESTER', which exists in the list of all characters
+
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-characters.transcripts.df %<>%
+characters.transcripts %>%
+  str_subset(pattern = rebus::or("LORD ", "MAESTER ",
+                                 "SER ", "YOUNG ", #careful when removing SER!
+                                 "LADY ", "LADYC ", # Lady Crane exists in the wikipedia list! Can not blindly remove LADY.
+                                 "GRAND")) %>%
+  sort
+  
+```
+  
+  
+  ```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+  
   mutate(name = name %>% str_replace_all(pattern = rebus::or("LORD ", "MAESTER ",
                                                          "SER ", "YOUNG ",
                                                          "LADY ", "LADYC "),
