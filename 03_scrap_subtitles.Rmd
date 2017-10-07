@@ -142,7 +142,7 @@ episode.list.df <- data_frame(season = season.vector,
 episode.list.df
 
 rm(valid.links, season.vector, episode.number.vector, links.all.seasons.1, links.all.seasons.2,
-   links.all.seasons.df)
+   links.all.seasons.df, episode.list)
 
 ```
 
@@ -226,17 +226,14 @@ e.g.
 * https://genius.com/Game-of-thrones-winter-is-coming-annotated
 * https://genius.com/Game-of-thrones-the-kingsroad-annotated
 
-Ideally, the pattern used should also be able to capture all names in characters scraped from wikipedia.
+Ideally, the pattern used should also be able to capture all names in characters scraped from wikipedia (i.e. object: characters.all).
 
 There are some transcripts that use \ n pattern, others that don't
 
-
-Object: characters.all
-
-What about characters that are word + word + word?
-
 There are patterns of NAME (in valerian) e.g:
 CERSEI (sighs): Thank you so much for your kind words.
+
+Names can have one or multiple words.
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
@@ -258,11 +255,9 @@ characters.transcripts <- episode.list.df$transcript %>%
 
 rm(pattern.character.names)
 
-#characters.transcripts
-
 ```
 
-All characters in transcripts to upper. 
+All characters in transcripts to upper. This is not the final list and should be further cleaned! 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 characters.transcripts %<>%
@@ -274,17 +269,24 @@ characters.transcripts
 ```
 
 
-Careful! This is not the final count. The only purpose here should be to help data cleaning.
+# Clean names in transcritpts and match them to character names in previous scripts
+
+## Create numeric identifiers for  character names which appeared in previous scripts
+
+Create a data frame with wikipedia/all character names with an identifier
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-characters.transcripts.df <- data_frame(name = characters.transcripts,
-                                count = map_dbl(characters.transcripts, str_count))
+characters.all.map.df <- data_frame(character.names.wikipedia = characters.all %>% toupper(),
+           identifier = 1:length(characters.all))
 
-characters.transcripts.df
+characters.all.map.df %>%
+  write_csv("interim_output/characters_all_map.csv")
+
 ```
 
-Address pattern of 'young' in transctipts.
-lady, maester, ser, lord
+## Do a quick clean of characters in transcripts
+
+Delete prefix such as: 'young', 'lady', 'maester', 'ser' and 'lord'.
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 characters.transcripts.df %<>%
@@ -321,6 +323,11 @@ characters.all.df %<>%
   select(-name_3)
 
 ```
+
+
+
+
+
 
 Clean characters from transcripts
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
