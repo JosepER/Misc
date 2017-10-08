@@ -270,20 +270,7 @@ characters.transcripts
 ```
 
 
-# Clean names in transcritpts and match them to character names in previous scripts
-
-## Create numeric identifiers for  character names which appeared in previous scripts
-
-Create a data frame with wikipedia/all character names with an identifier
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-characters.all.map.df <- data_frame(character.names.wikipedia = characters.all %>% toupper() %>% sort(),
-           identifier = 1:length(characters.all))
-
-characters.all.map.df %>%
-  write_csv("interim_output/characters_all_map.csv")
-
-```
+# Clean names in transcritpts
 
 ## Do a quick clean of characters in transcripts
 
@@ -331,18 +318,17 @@ for(i in seq_along(characters.transcripts)){
   
 }
 
-characters.transcripts 
+characters.transcripts %<>% 
+  sort 
+
+characters.transcripts
+
+rm(name., error.sources.pattern., i)
 
 ```
 
 
-
-
 Delete objects which are obviously not characters
-
-Note: make sure all deleted characters are actually in the list. the original list of deleted characters was not trimmed.
-
-Maybe trimm delete.non.characters first?
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 delete.non.characters <- c("A VOICE", "ALL", "ALL THREE", "ALL TOGETHER", 
@@ -366,10 +352,168 @@ delete.non.characters <- c("A VOICE", "ALL", "ALL THREE", "ALL TOGETHER",
   "THEON COVERS THE MAP WITH PAWNSGREATJON UMBER", "THIN MAN", "TOGETHER",
   "TRIBESMEN OF THE VALE", "VOICES OUTSIDE", "WAITRESS", "WATCHMAN",
   "WILDLING", "WILDLING ELDER", "WINE MERCHANT", "WOMAN", "MAN") %>%
-  str_trim(side = "right")
+  str_trim(side = "right") %>%
+  unique()
 
 ```
 
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts <- characters.transcripts[!characters.transcripts %in% delete.non.characters]
+
+```
+
+**Create a data frame that maps the original names that appear in the transcripts with their cleaned version**
+Orignal names contain spelling mistakes or different versions of the name than those in the scrapped wikipedia list.
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df <- data_frame(characters.transcripts.original = characters.transcripts,
+                                        characters.transcripts.cleaned = characters.transcripts)
+
+rm(characters.transcripts)
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df$characters.transcripts.cleaned %>%
+  str_subset(pattern = "AERSON")
+
+```
+
+
+**Create table with replacements**
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+original. <- c(rebus::or("ALLITHORNE", "ALLITHRONE", "ALLISTER"),
+               rebus::or("BAELISH", "LITTLEFINGER"),
+               "BLACK WALDER",
+               "BLACKFISH",
+               "BRAND",
+               "BRIENNE",
+               "CASSEL",
+               rebus::or("DAERNEYS", "DANERYS"),
+               rebus::or("DARIO", "DARRIO"),
+               rebus::or("DOLOROUS EDD", "EDDARDDISON TOLLETT"),
+               rebus::or(exactly("ED"), exactly("EDD"), exactly("EDDARDD")),
+               rebus::or("ELARIA", "ELLIA"),
+               "EYED RAVEN",
+               "GREYWORM",
+               "ROYCE",
+               rebus::or("PYCELL", "PYRCELLE", "PYCELLEE"),
+               "MELISDANDRE",
+               "MHAEGAN",
+               "MOSADOR",
+               "MOUNTAIN",
+               "OLEANNA",
+               "OTHELL YARWICK",
+               rebus::or("SAM", "SAMMY"),
+               "SAAN",
+               "QYBURNS",
+               "RAMSEY",
+               "ROZ",
+               "SLYNT",
+               "THE HOUND")
+
+replacement. <- c("ALLISER THORNE",
+                  "PETYR BAELISH",
+                  "BLACK WALDER RIVERS",
+                  toupper("Brynden Tully"),
+                  "BRAN",
+                  "BRIENNE OF TARTH",
+                  "RODRIK CASSEL",
+                  "DAENERYS",
+                  toupper("Daario Naharis"),
+                  "EDDISON TOLLETT",
+                  "EDDARD",
+                  "ELLARIA SAND",
+                  "THREE-EYED RAVEN",
+                  "GREY WORM",
+                  "WAYMAR ROYCE",
+                  "PYCELLE",
+                  "MELISANDRE",
+                  "MHAEGEN",
+                  "MOSSADOR",
+                  "GREGOR CLEGANE",
+                  "OLENNA",
+                  "OTHELL YARWYCK",
+                  "SAMWELL TARLY",
+                  "SALLADHOR SAAN",
+                  "QYBURN",
+                  "RAMSAY",
+                  "ROS",
+                  "JANOS SLYNT",
+                  "SANDOR CLEGANE")
+
+replacements <- data_frame(original = original., replacement = replacement.)
+
+rm(original., replacement.)
+
+```
+
+Check that all original. words are in original transcripts.
+
+Did I not capture 'Eyed raven' this time?
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+for(i in 1:nrow(replacements)){
+  
+  replacements$original[i] %>% print()
+  
+  str_detect(characters.transcripts.df$characters.transcripts.original, replacements$original[i]) %>%
+    sum() %>% print()
+  
+}
+
+```
+
+
+Clean characters from transcripts
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df %>%
+  mutate(characters.transcripts.cleaned = characters.transcripts.cleaned %>%
+           str_replace(pattern = "AERSON", replacement = "AERON"))
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+
+
+```
+
+
+
+
+
+
+
+
+# Match characters in transcripts to all names in previous scripts
+
+## Create numeric identifiers for  character names which appeared in previous scripts
+
+Create a data frame with wikipedia/all character names with an identifier
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.all.map.df <- data_frame(character.names.wikipedia = characters.all %>% toupper() %>% sort(),
+           identifier = 1:length(characters.all))
+
+characters.all.map.df %>%
+  write_csv("interim_output/characters_all_map.csv")
+
+```
+
+## Try to match exact 
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+
+
+```
+
+## Do manual match for those that could not be matched automatically
 
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
@@ -380,9 +524,7 @@ stop("Atura't")
 
 
 
-**PREVIOUS SCRIPT**
-
-  
+#PREVIOUS SCRIPT
 
 In transcripts, many characters appear only with their first name (i.e. last name is excluded). We need to compute the first name of all characters and match the names in transcripts with either first name or full name
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
@@ -412,58 +554,6 @@ characters.all.df %<>%
 
 
 
-
-
-
-
-
-
-
-
-
-
-Clean characters from transcripts
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-characters.transcripts.df %<>%
-  filter(!name %in% c("A VOICE", "ALL", "ALL THREE", "ALL TOGETHER",
-                      "ANNOUNCER", "ARCHERS", "ATTENDANT", "BANKER",
-                      "BLONDE PROSTITUTE", "BOLTON BANNERMAN", "BOLTON OFFICER"))%>%
-  mutate(name = name %>% str_replace(pattern = "AERSON", replacement = "AERON") %>%
-           str_replace(pattern = rebus::or("ALLITHORNE", "ALLITHRONE", "ALLISTER"), replacement = "ALLISER THORNE") %>%
-           str_replace(pattern = rebus::or("BAELISH", "LITTLEFINGER"), replacement = "PETYR BAELISH") %>%
-           str_replace(pattern = "BLACK WALDER", replacement = "BLACK WALDER RIVERS") %>%
-           str_replace(pattern = "BLACKFISH", replacement = toupper("Brynden Tully")) %>%
-           str_replace(pattern = "BRAND", replacement = "BRAN") %>%
-           str_replace(pattern = "BRIENNE", replacement = "BRIENNE OF TARTH") %>%
-           str_replace(pattern = rebus::or("CASSEL"), replacement = "RODRIK CASSEL") %>%
-           str_replace(pattern = rebus::or("DAERNEYS", "DANERYS"), replacement = "DAENERYS") %>%
-           str_replace(pattern = rebus::or("DARIO", "DARRIO"), replacement = toupper("Daario Naharis")) %>%
-           str_replace(pattern = rebus::or("DOLOROUS EDD", "EDDARDDISON TOLLETT"), replacement = "EDDISON TOLLETT") %>%
-           str_replace(pattern = rebus::or(exactly("ED"), exactly("EDD"), exactly("EDDARDD")), replacement = "EDDARD") %>%
-           str_replace(pattern = rebus::or("ELARIA", "ELLIA"), replacement = "ELLARIA SAND") %>%
-           str_replace(pattern = ("EYED RAVEN"), replacement = "THREE-EYED RAVEN") %>%
-           str_replace(pattern = ("GREYWORM"), replacement = "GREY WORM") %>%
-           str_replace(pattern = "ROYCE", replacement = "WAYMAR ROYCE") %>%
-           str_replace(pattern = rebus::or("PYCELL", "PYRCELLE", "PYCELLEE"), replacement = "PYCELLE") %>%
-           str_replace(pattern = "MELISDANDRE", replacement = "MELISANDRE") %>%
-           str_replace(pattern = "MHAEGAN", replacement = "MHAEGEN") %>%
-           str_replace(pattern = "MOSADOR", replacement = "MOSSADOR") %>%
-           str_replace(pattern = "MOUNTAIN", replacement = "GREGOR CLEGANE") %>%
-           str_replace(pattern = "OLEANNA", replacement = "OLENNA") %>%
-           str_replace(pattern = "OTHELL YARWICK", replacement = "OTHELL YARWYCK") %>%
-           str_replace(pattern = rebus::or("SAM", "SAMMY"), replacement = "SAMWELL TARLY") %>%
-           str_replace(pattern = "SAAN", replacement = "SALLADHOR SAAN") %>%
-           str_replace(pattern = "QYBURNS", replacement = "QYBURN") %>%
-           str_replace(pattern = "RAMSEY", replacement = "RAMSAY") %>%
-           str_replace(pattern = "ROZ", replacement = "ROS") %>%
-           str_replace(pattern = "SLYNT", replacement = "JANOS SLYNT") %>%
-           str_replace(pattern = "THE HOUND", replacement = "SANDOR CLEGANE")
-           
-           )
-#OTHELL YARWICK
-
-```
 Salladhor Saan
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
