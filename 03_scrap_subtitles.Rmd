@@ -485,12 +485,6 @@ characters.transcripts.df %>%
 ```
 
 
-
-
-
-
-
-
 # Match characters in transcripts to all names in previous scripts
 
 ## Create numeric identifiers for  character names which appeared in previous scripts
