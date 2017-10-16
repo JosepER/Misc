@@ -1,0 +1,84 @@
+---
+title: "Template for team analysis"
+output:
+  html_notebook: 
+    toc: yes
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+  word_document:
+    toc: yes
+---
+
+```{r , echo=FALSE, warning=FALSE, message=FALSE}
+
+rm(list = ls())
+library(stringr)
+library(magrittr)
+library(tidyverse)
+
+```
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+
+premier.league.data <- read_rds("raw_input/epldata_final.RDS")
+
+premier.league.data %<>%
+  mutate(club = club %>% 
+           str_replace_all(pattern = "\\+", replacement = " "))
+
+team.data <- read_rds("interim_output/premier_teams/team.RDS")
+
+team.name <- team.data$club %>% unique
+
+```
+
+
+This template analyses `r team.name` and compares it with the rest of Premier League teams.
+
+
+```{r count_positions_team, echo=FALSE, message=FALSE, warning=FALSE}
+
+map_positions <- data_frame(position_cat = seq(1:4),
+                            position_name = c("Forward", "Midfielder", "Defender", "Goalkeeper"))
+
+position.counts <- team.data %>%
+  count(position_cat) %>%
+  left_join(map_positions, by = "position_cat" )
+
+```
+
+```{r count_positions_league, echo=FALSE, message=FALSE, warning=FALSE}
+
+league.position.counts <- premier.league.data %>%
+  mutate(dummy_goalkeeper = if_else(position_cat == 4, 1, 0),
+         dummy_defender = if_else(position_cat == 3, 1, 0),
+         dummy_midfielder = if_else(position_cat == 2, 1, 0),
+         dummy_forward = if_else(position_cat == 1, 1, 0)) %>%
+  group_by(club) %>%
+  summarise(Goalkeeper = sum(dummy_goalkeeper),
+            Defender = sum(dummy_defender),
+            Midfielder = sum(dummy_midfielder),
+            Forward = sum(dummy_forward))
+  
+league.means <- league.position.counts %>%
+  summarise_all(.funs = function(x){x %>% mean %>% round(0) }) %>%
+  select(-club) %>%
+  gather(value = league_average) 
+
+
+```
+
+```{r count_positions_comparison, echo=FALSE, message=FALSE, warning=FALSE}
+
+difference.with.average <- position.counts %>%
+  left_join(league.means, by = c("position_name" = "key") ) %>%
+  mutate(difference = n - league_average)
+
+```
+
+`r team.name[[1]]` squad has `r position.counts %>% filter(position_name == "Goalkeeper") %$% n` goalkeepers, `r position.counts %>% filter(position_name == "Defender") %$% n` defenders, `r position.counts %>% filter(position_name == "Midfielder") %$% n` midfielders and `r position.counts %>% filter(position_name == "Forward") %$% n` forwards.  
+
+
+
