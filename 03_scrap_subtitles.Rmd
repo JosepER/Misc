@@ -230,8 +230,8 @@ Ideally, the pattern used should also be able to capture all names in characters
 
 There are some transcripts that use \ n pattern, others that don't
 
-There are patterns of NAME (in valerian) e.g:
-CERSEI (sighs): Thank you so much for your kind words.
+There are patterns of 'NAME (in valerian)' e.g:
+'CERSEI (sighs): Thank you so much for your kind words'.
 
 Names can have one or multiple words.
 
@@ -296,7 +296,7 @@ We will skip those rows when when removing the patterns.
 
 name. <- vector(mode = "character", length = 1)
 
-error.sources.pattern. <- rebus::or("ALLISER", "LADY CRANE", "ARCHMAESTER",
+error.sources.pattern. <- rebus::or("LADY CRANE", "ARCHMAESTER",
                                     "LORD OF BONES")
 
 for(i in seq_along(characters.transcripts)){
@@ -311,7 +311,7 @@ for(i in seq_along(characters.transcripts)){
       
     characters.transcripts[i] %<>%
       str_replace_all(pattern = rebus::or("LORD ", "MAESTER ",
-                                                         "SER ", "YOUNG ",
+                                                         "^SER ", "YOUNG ",
                                                          "LADY ", "LADYC "),
                                      replacement = "")
     }
@@ -369,6 +369,8 @@ Orignal names contain spelling mistakes or different versions of the name than t
 
 characters.transcripts.df <- data_frame(characters.transcripts.original = characters.transcripts,
                                         characters.transcripts.cleaned = characters.transcripts)
+
+
 
 rm(characters.transcripts)
 
@@ -454,7 +456,7 @@ rm(original., replacement.)
 
 Check that all original. words are in original transcripts.
 
-Did I not capture 'Eyed raven' this time?
+**TO DO: Did I not capture 'Eyed raven' this time?**
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 for(i in 1:nrow(replacements)){
@@ -475,6 +477,9 @@ Clean characters from transcripts
 characters.transcripts.df %>%
   mutate(characters.transcripts.cleaned = characters.transcripts.cleaned %>%
            str_replace(pattern = "AERSON", replacement = "AERON"))
+
+characters.transcripts.df %<>%
+  unique()
 
 ```
 
@@ -498,16 +503,61 @@ characters.all.map.df <- data_frame(character.names.wikipedia = characters.all %
 characters.all.map.df %>%
   write_csv("interim_output/characters_all_map.csv")
 
+rm(characters.all)
+
 ```
 
 ## Try to match exact 
+
+Percentage of cases matching
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-
+(characters.all.map.df$character.names.wikipedia %in% characters.transcripts.df$characters.transcripts.cleaned) %>% sum()/nrow(characters.all.map.df)
 
 ```
 
-## Do manual match for those that could not be matched automatically
+Matched cases
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.all.map.df %>% 
+  filter(character.names.wikipedia %in% characters.transcripts.df$characters.transcripts.cleaned) %$%
+  character.names.wikipedia %>% head()
+
+```
+
+Unmatched cases
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.all.map.df %>% 
+  filter(!character.names.wikipedia %in% characters.transcripts.df$characters.transcripts.cleaned) %$%
+  character.names.wikipedia %>% head()
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df %<>%
+  left_join(characters.all.map.df, 
+            by = c("characters.transcripts.cleaned"="character.names.wikipedia") )
+
+```
+
+## Suggest matches by first name
+
+For unmatched characters, try matching by first name. These matches should be checked manually. This is because some first names apply to multiple characters 
+(e.g. Kahl Brozho, Kahl Frozho)
+
+In transcripts, many characters appear only with their first name (i.e. last name is excluded). We need to compute the first name of all characters and match the names in transcripts with either first name or full name
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.all.firstname <- characters.all.map.df$character.names.wikipedia %>%
+  str_match(pattern = capture("[[:upper:]]+") %R% optional(" " %R% "\\w+") %R% " [[:upper:]].+") %>% .[,2]
+
+characters.all.map.df %<>%
+  bind_cols(characters.all.firstname = characters.all.firstname)
+
+```
 
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
@@ -515,6 +565,29 @@ characters.all.map.df %>%
 stop("Atura't")
 
 ```
+
+
+
+
+## Do manual match for those that could not be matched automatically
+
+
+**To do: I would still try to match as many first names as possible** 
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df %>%
+  filter(is.na(identifier)) %>%
+  write_csv("interim_output/characters_manually_match.csv")
+
+```
+
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+stop("Atura't")
+
+```
+
 
 
 
