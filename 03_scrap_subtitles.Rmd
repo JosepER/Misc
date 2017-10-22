@@ -278,14 +278,15 @@ Delete prefix such as: 'young', 'lady', 'maester', 'ser' and 'lord'.
 Careful with:
 * Removing pattern 'SER ' would cut the end of 'ALLISER';
 * Removing pattern 'LADY ' would also remove it from 'LADY CRANE', which exists in the list of all characters;
-* Removing pattern 'LORD ' would also remove it from 'LORD OF BONES', which exists in the list of all characters;
+* Removing pattern 'LORD ' would also remove it from 'LORD OF BONES', which exists in the list of all characters. Removing pattern 'LORD' also causes confusion as we can latter not distinguish between 'LORD KARSTARK' (i.e. Rickard Karstark) and Harald Karstark (named as 'Karstark' in season 6). Removing the same pattern in 'LORD MORMONT' makes it impossible to distinguish between 'Jeor Mormont' (aka Lord Mormont) and 'Jorah Mormont';
+* Removing pattern 'YOUNG' creates confusion as 'YOUNG LYANNA' (i.e. Lyanna Stark) gets the same name as 'LYANNA' (i.e. Lyanna Mormont).
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 characters.transcripts %>%
   str_subset(pattern = rebus::or("LORD ", "MAESTER ",
                                  "SER ", "YOUNG ", #careful when removing SER!
-                                 "LADY ", "LADYC ", # Lady Crane exists in the wikipedia list! Can not blindly remove LADY.
+                                 "LADY ", # Lady Crane exists in the wikipedia list! Can not blindly remove LADY.
                                  "GRAND")) %>%
   sort
   
@@ -297,7 +298,8 @@ We will skip those rows when when removing the patterns.
 name. <- vector(mode = "character", length = 1)
 
 error.sources.pattern. <- rebus::or("LADY CRANE", "ARCHMAESTER",
-                                    "LORD OF BONES")
+                                    "LORD OF BONES", "LORD KARSTARK",
+                                    "YOUNG LYANNA", "LORD MORMONT")
 
 for(i in seq_along(characters.transcripts)){
   
@@ -402,7 +404,6 @@ original. <- c(rebus::or("ALLITHORNE", "ALLITHRONE", "ALLISTER"),
                rebus::or("ELARIA", "ELLIA"),
                "EYED RAVEN",
                "GREYWORM",
-               "ROYCE",
                rebus::or("PYCELL", "PYRCELLE", "PYCELLEE"),
                "MELISDANDRE",
                "MHAEGAN",
@@ -416,7 +417,11 @@ original. <- c(rebus::or("ALLITHORNE", "ALLITHRONE", "ALLISTER"),
                "RAMSEY",
                "ROZ",
                "SLYNT",
-               "THE HOUND")
+                rebus::or("THE HOUND","HOUND"),
+               "LORD KARSTARK",
+               "YOUNG LYANNA",
+               "LADYC RANE",
+               "LORD MORMONT")
 
 replacement. <- c("ALLISER THORNE",
                   "PETYR BAELISH",
@@ -432,7 +437,6 @@ replacement. <- c("ALLISER THORNE",
                   "ELLARIA SAND",
                   "THREE-EYED RAVEN",
                   "GREY WORM",
-                  "WAYMAR ROYCE",
                   "PYCELLE",
                   "MELISANDRE",
                   "MHAEGEN",
@@ -446,7 +450,11 @@ replacement. <- c("ALLISER THORNE",
                   "RAMSAY",
                   "ROS",
                   "JANOS SLYNT",
-                  "SANDOR CLEGANE")
+                  "SANDOR CLEGANE",
+                  "RICKARD KARSTARK",
+                  "LYANNA STARK",
+                  "LADY CRANE",
+                  "JEOR MORMONT")
 
 replacements <- data_frame(original = original., replacement = replacement.)
 
@@ -468,6 +476,8 @@ for(i in 1:nrow(replacements)){
   
 }
 
+rm(replacements, i)
+
 ```
 
 
@@ -483,11 +493,7 @@ characters.transcripts.df %<>%
 
 ```
 
-```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-
-
-```
 
 
 # Match characters in transcripts to all names in previous scripts
@@ -534,13 +540,6 @@ characters.all.map.df %>%
 
 ```
 
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-characters.transcripts.df %<>%
-  left_join(characters.all.map.df, 
-            by = c("characters.transcripts.cleaned"="character.names.wikipedia") )
-
-```
 
 ## Suggest matches by first name
 
@@ -559,6 +558,292 @@ characters.all.map.df %<>%
 
 ```
 
+
+Eliminate repeated first names. It would be dangerous to match them.
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+repeated.first.names <- characters.all.map.df %>%
+  count(characters.all.firstname) %>%
+  filter(n > 1, !is.na(characters.all.firstname)) %>%
+  arrange(desc(n))
+
+repeated.first.names
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.all.map.df %<>%
+  mutate(characters.all.firstname = if_else(!characters.all.firstname %in% repeated.first.names$characters.all.firstname,
+                                            true = characters.all.firstname,
+                                            false = NA_character_ ) )
+
+```
+
+Try to match with full name OR only first name
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.all.map.df
+
+characters.transcripts.df %>% head
+
+```
+
+
+**To do: It still misses some like ALLISER THRONE, Cersei Baratheon or   **
+Overall, it's a great improvement. Manually check. Then export those that are not matched and do it manually.
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df %<>%
+  left_join(characters.all.map.df %>% select(character.names.wikipedia, identifier), 
+            by = c("characters.transcripts.cleaned"="character.names.wikipedia") ) %>%
+  rename(identifier_fullname = identifier) %>%
+  left_join(characters.all.map.df %>% select(characters.all.firstname, identifier),
+            by = c("characters.transcripts.cleaned"="characters.all.firstname")) %>%
+  rename(identifier_firstname = identifier)
+
+characters.transcripts.df
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df %<>%
+  mutate(identifier = if_else(!is.na(identifier_fullname), 
+                              true =  identifier_fullname,
+                              false = identifier_firstname
+         )) %>%
+  select(-identifier_fullname, -identifier_firstname)
+
+characters.transcripts.df
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df %$% identifier %>% is.na() %>% sum()
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df %>%
+  filter(is.na(identifier)) %>%
+  write_csv("interim_output/characters_manually_match.csv")
+
+```
+
+## Check where unmatched/ambiguous characters appear
+```{r eval=TRUE, echo = FALSE, warning=FALSE, message=FALSE}
+
+episode.list.df$transcript %>%
+  map_lgl(function(x){str_detect(x, rebus::or("Arryn: ","ARRYN: ") )}) %>% 
+  unlist() %>% 
+  which()
+
+episode.list.df$transcript %>%
+  map_lgl(function(x){str_detect(x, rebus::or("Jon: ","JON: ") )}) %>% 
+  unlist() %>% 
+  which()
+
+```
+
+```{r eval=TRUE, echo = FALSE, warning=FALSE, message=FALSE}
+
+episode.list.df$transcript %>%
+  map_lgl(function(x){str_detect(x, rebus::or("KARSTARK: ","Karstark: ") )}) %>% 
+  unlist() %>% 
+  which()
+
+episode.list.df$transcript %>%
+  map_lgl(function(x){str_detect(x, rebus::or("KARSTARK: ","Karstark: ") )}) %>% 
+  unlist() %>% 
+  which() %>%
+  episode.list.df$link[.]
+
+
+```
+
+```{r eval=TRUE, echo = FALSE, warning=FALSE, message=FALSE}
+
+episode.list.df$transcript %>%
+  map_lgl(function(x){str_detect(x, rebus::or("LYANNA MORMONT: ","Lyanna Mormont: ") )}) %>% 
+  unlist() %>% 
+  which() 
+
+episode.list.df$transcript %>%
+  map_lgl(function(x){str_detect(x, rebus::or("LYANNA: ","Lyanna: ") )}) %>% 
+  unlist() %>% 
+  which() 
+
+```
+
+
+It looks like the mention to 'ROYCE' in the first episode refers to 'WAYMAR ROYCE' and those in episoded 38, 41, 54, 62 refer to 'YOHN ROYCE'. That's great.
+```{r eval=TRUE, echo = FALSE, warning=FALSE, message=FALSE}
+
+episode.list.df$transcript %>%
+  map_lgl(function(x){str_detect(x, rebus::or("ROYCE: ","Royce: ") )}) %>% 
+  unlist() %>% 
+  which() 
+
+episode.list.df$transcript %>%
+  map_lgl(function(x){str_detect(x, rebus::or("WAYMAR ROYCE: ","Waymar Royce: ") )}) %>% 
+  unlist() %>% 
+  which() 
+
+episode.list.df$transcript %>%
+  map_lgl(function(x){str_detect(x, rebus::or("ROBAR ROYCE: ","Robar Royce: ") )}) %>% 
+  unlist() %>% 
+  which() 
+
+episode.list.df$transcript %>%
+  map_lgl(function(x){str_detect(x, rebus::or("YOHN ROYCE: ","Yohn Royce: ") )}) %>% 
+  unlist() %>% 
+  which() 
+
+```
+
+
+
+3825f45v5d
+
+## Import back the transcript characters which were manually matched
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.manually.matched <- read_delim("interim_output/characters_manually_match_MOD.csv",
+                                        delim = ";")
+
+```
+
+### New characters to add to the wikipedia list
+These are characters that appeared in the transcripts but not in the wikipedia list. We should add them to the list scrapped from wikipedia (i.e. characters.all). 
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+next.current.identifier <- characters.all.map.df$identifier %>%
+  max()+1
+
+number.new.added <- characters.manually.matched %>%
+  filter(comment == "add as new character") %>%
+  nrow()
+
+added.characters <- characters.manually.matched %>%
+  filter(comment == "add as new character") %>%
+  select(new_name) %>%
+  mutate(character.names.wikipedia = toupper(new_name),
+         identifier = next.current.identifier:(next.current.identifier+number.new.added-1),
+         characters.all.firstname = NA_character_) %>%
+  select(-new_name)
+
+characters.all.map.df %<>%
+  bind_rows(added.characters)
+
+rm(next.current.identifier, number.new.added)
+
+```
+
+### Characters to delete from transcripts
+These were spot as characters from transcripts but are not. They should be deleted.
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+deleted.characters <- characters.manually.matched %>%
+  filter(comment == "delete") %>%
+  select(characters.transcripts.cleaned)
+
+characters.transcripts.df %<>%
+  anti_join(deleted.characters) 
+
+rm(deleted.characters)
+
+```
+
+### Character identifiers to update after manual check
+
+With manual checks we imputed identifiers to match wikipedia scrapped characters (characters.all.df) with those in the transcripts (characters.transcripts.df)
+
+Need to add new names and identities for those that were added after the manual review. 
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+matched.characters <- characters.manually.matched %>%
+  mutate(characters.transcripts.cleaned_new = if_else(comment == "add as new character",
+                                                  true = toupper(new_name),
+                                                  false = characters.transcripts.cleaned)) %>%
+  rename(identifier_new = identifier) %>%
+  filter(is.na(comment) | comment != "delete") %>%
+  select(characters.transcripts.original, 
+         characters.transcripts.cleaned_new, identifier_new)
+
+characters.transcripts.df %<>%
+  left_join(matched.characters, by = "characters.transcripts.original") %>% #cleaned have been modified. match with original
+  mutate(identifier = if_else(!is.na(identifier),
+                              true = identifier,
+                              false = identifier_new),
+         characters.transcripts.cleaned = if_else(!is.na(characters.transcripts.cleaned_new),
+                                                  true = characters.transcripts.cleaned_new,
+                                                  false = characters.transcripts.cleaned)) %>% select(-characters.transcripts.cleaned_new, -identifier_new)
+
+characters.transcripts.df
+
+```
+
+
+Fill identifier for those that were added to the wikipedia list. Do this by merging characters.transcripts with wikipedia characters (characters.all) 
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+added.characters
+
+characters.transcripts.df %>%
+  filter(is.na(identifier))
+
+(!characters.transcripts.df %>%
+  filter(is.na(identifier)) %$%
+  characters.transcripts.cleaned  %in% added.characters$character.names.wikipedia) %>%
+  which()
+
+characters.all.map.df
+
+```
+We will probably not need first names any more
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.all.map.df %<>% select(-characters.all.firstname)
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df %<>%
+  left_join(characters.all.map.df %>% rename(identifier_wikipedia = identifier),
+            by = c("characters.transcripts.cleaned" = "character.names.wikipedia") ) %>%
+  mutate(identifier = if_else(is.na(identifier) & !is.na(identifier_wikipedia),
+                              true = identifier_wikipedia,
+                              false = identifier)) 
+  
+
+characters.all.map.df 
+
+characters.transcripts.df
+```
+
+Clean all objects that we're not gonna use
+#rm(added.characters)
+
+
+
+Carefull, double-check recodes in MOD interim_output file. I think ids might have moved after not removing certain patterns.
+
+Check which characters from wikipedia do not appear in transcripts
+
+Good news and bad news. IDs might not have moved but non-deleted patterns do not appear in wikipedia nor transcripts
+
+These guys shouldn't exist because they were replaced
+
+Impute id = 207 to RICKARD KARSTARK
+LORD KARSTARK
+LORD MORMONT
+YOUNG LYANNA
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
