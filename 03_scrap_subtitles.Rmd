@@ -187,6 +187,15 @@ rm(all.transcripts)
 
 ```
 
+# Manually explore scrapped GoT transcripts
+Transcripts can be manually explored here using the function writeLines. Careful with large outputs.
+```{r eval=FALSE, warning=FALSE, message=FALSE}
+
+episode.list.df$transcript[1] %>% writeLines()
+
+```
+
+
 #Spot character names in transcripts
 Transcriptions use names both in upper and lower case! 
 e.g. 
@@ -840,6 +849,14 @@ View(characters.transcripts.df)
 
 ```
 
+To do: checked eyed raven pattern that seemed not to be captured before!
+```{r eval=FALSE, warning=FALSE, message=FALSE}
+
+episode.list.df %>% select(transcript) %>% 
+  purrr::transpose() %>%
+  map_lgl(function(x){x %>% str_detect("EYED RAVEN")})
+  
+```
 
 
 Check which characters from wikipedia do not appear in transcripts. Do the same for dead characters.
@@ -848,7 +865,7 @@ Good news and bad news. IDs might not have moved but non-deleted patterns do not
 
 These guys shouldn't exist because they were replaced by their 
 
-
+check the 'to do' in the script. It's about the 'Eyed Raven' character
 
 
 
