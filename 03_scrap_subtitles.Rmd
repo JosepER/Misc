@@ -83,7 +83,7 @@ links.all.seasons.df <- data_frame(link_1 = links.all.seasons.1,
 
 ## Check if links are valid 
 Not all episodes are transcribed in genius.com webpage!
-Spot missing transcribed episodes.
+Spot missing transcribed episodes. Careful, this process requieres internet connextion and might take a few minutes.
 _To update list of transcripts, delete the output of this chunk of code and run it_
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
@@ -180,39 +180,6 @@ episode.list.df$transcript[episode.list.df$link != "missing episode"] <- all.tra
 
 ```
 
-###Transcripts into readable text
-This step is not strictly needed but it helps manual explorations and checks.
-**Not finished**
-```{r eval=FALSE, warning=FALSE, message=FALSE}
-
-if(!"interim_output/transcripts" %in% list.dirs("interim_output/transcripts")){
-  
-  dir.create("interim_output/transcripts")
-  
-}
-
-#for(i in 1:nrow(episode.list.df)){
-  
- # episode.list.df
-  
-#}
-
-trial <- episode.list.df[1:3,] %>% #place a conditional to use only those that have valid transcripts
-  transpose() %>%
-  map(function(x){ 
-    
-    x$transcript %>%
-      strsplit(split = rebus::or("\n", "." %R% "[[:upper:]]+" ) ) %>%
-      unlist() %>% 
-      #data_frame() %>% 
-      print()
-      #write_delim(path = str_c("interim_output/transcripts/","transcript_", x$episode_name, ".txt"),
-       #           delim = "\t")
-    
-      }) 
-  
-
-```
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
@@ -362,6 +329,8 @@ delete.non.characters <- c("A VOICE", "ALL", "ALL THREE", "ALL TOGETHER",
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 characters.transcripts <- characters.transcripts[!characters.transcripts %in% delete.non.characters]
+
+rm(delete.non.characters)
 
 ```
 
@@ -725,12 +694,15 @@ next.current.identifier <- characters.all.map.df$identifier %>%
   max()+1
 
 number.new.added <- characters.manually.matched %>%
-  filter(comment == "add as new character") %>%
-  nrow()
+  filter(comment == "add as new character") %$%
+  new_name %>%
+  unique %>%
+  length()
 
 added.characters <- characters.manually.matched %>%
   filter(comment == "add as new character") %>%
   select(new_name) %>%
+  unique %>%
   mutate(character.names.wikipedia = toupper(new_name),
          identifier = next.current.identifier:(next.current.identifier+number.new.added-1),
          characters.all.firstname = NA_character_) %>%
@@ -805,12 +777,16 @@ characters.transcripts.df %>%
 characters.all.map.df
 
 ```
+
 We will probably not need first names any more
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 characters.all.map.df %<>% select(-characters.all.firstname)
 
+rm(characters.all.firstname)
+
 ```
+
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
@@ -819,370 +795,62 @@ characters.transcripts.df %<>%
             by = c("characters.transcripts.cleaned" = "character.names.wikipedia") ) %>%
   mutate(identifier = if_else(is.na(identifier) & !is.na(identifier_wikipedia),
                               true = identifier_wikipedia,
-                              false = identifier)) 
+                              false = identifier)) %>%
+  select(-identifier_wikipedia)
   
 
-characters.all.map.df 
-
-characters.transcripts.df
 ```
 
-Clean all objects that we're not gonna use
-#rm(added.characters)
+Impute manually to those patterns that were not removed due to ambiguities. These correspond to:
+* LORD KARSTARK
+* LORD MORMONT
+* YOUNG LYANNA
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+imputed.identifiers <- data_frame(wikipedia_names = c("RICKARD KARSTARK", "JEOR MORMONT", "LYANNA STARK"),
+           transcripts_names = c("LORD KARSTARK", "LORD MORMONT", "YOUNG LYANNA") )
+
+imputed.identifiers %<>%
+  left_join(characters.all.map.df, by = c("wikipedia_names" = "character.names.wikipedia")) %>%
+  rename(identifier_wikipedia = identifier)
+
+characters.transcripts.df %<>%
+  left_join(imputed.identifiers, by = c("characters.transcripts.original"= "transcripts_names") ) %>%
+  mutate(identifier = if_else(!is.na(wikipedia_names),
+                              true = identifier_wikipedia,
+                              false = identifier)) %>%
+  select(-identifier_wikipedia, wikipedia_names)
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+rm(imputed.identifiers, added.characters, matched.characters, 
+   repeated.first.names)
+
+```
+
+#Explore final wikipedia and transcript datasets
+```{r eval=FALSE, warning=FALSE, message=FALSE}
+
+View(characters.all.map.df)
+
+View(characters.transcripts.df)
+
+```
 
 
 
-Carefull, double-check recodes in MOD interim_output file. I think ids might have moved after not removing certain patterns.
-
-Check which characters from wikipedia do not appear in transcripts
+Check which characters from wikipedia do not appear in transcripts. Do the same for dead characters.
 
 Good news and bad news. IDs might not have moved but non-deleted patterns do not appear in wikipedia nor transcripts
 
-These guys shouldn't exist because they were replaced
+These guys shouldn't exist because they were replaced by their 
 
-Impute id = 207 to RICKARD KARSTARK
-LORD KARSTARK
-LORD MORMONT
-YOUNG LYANNA
 
-```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-stop("Atura't")
 
-```
 
-
-
-
-## Do manual match for those that could not be matched automatically
-
-
-**To do: I would still try to match as many first names as possible** 
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-characters.transcripts.df %>%
-  filter(is.na(identifier)) %>%
-  write_csv("interim_output/characters_manually_match.csv")
-
-```
-
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-stop("Atura't")
-
-```
-
-
-
-
-#PREVIOUS SCRIPT
-
-In transcripts, many characters appear only with their first name (i.e. last name is excluded). We need to compute the first name of all characters and match the names in transcripts with either first name or full name
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-characters.all.firstname <- characters.all %>%
-  str_match(pattern = capture("[[:upper:]][[:lower:]]+") %R% optional(" " %R% "\\w+") %R% " [[:upper:]].+")
-
-# The previous regex fails to capture the first name of characters with names with three or more pieces such as:
-# Brienne of Tarth; Hizdahr zo Loraq; Thoros of Myr
-# I can do that with another regex.
-
-characters.all.firstname.alternative <-characters.all %>%
-  str_match(pattern = capture("[[:upper:]][[:lower:]]+") %R% " .+" %R%  " [[:upper:]].+")
-
-characters.all.df <- data_frame(name_1 = characters.all, 
-                                name_2 = characters.all.firstname[,2],
-                                name_3 = characters.all.firstname.alternative[,2])
-
-characters.all.df %<>%
-  mutate(name_2 = if_else(is.na(name_2),
-                          true = name_3,
-                          false =name_2 )) %>%
-  select(-name_3)
-
-```
-
-
-
-
-Salladhor Saan
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-characters.transcripts.df$name[!characters.transcripts.df$name %in% 
-                                 c(toupper(characters.all.df$name_1), toupper(characters.all.df$name_2))]
-
-```
-
-Optional: export unmatched character names to review them manually.
-```{r eval=FALSE, warning=FALSE, message=FALSE}
-
-characters.transcripts.df$name[!characters.transcripts.df$name %in% 
-                                 c(toupper(characters.all.df$name_1), toupper(characters.all.df$name_2))] %>%
-  as_data_frame %>% 
-  write_excel_csv("interim_output/unmatched_names.csv")
-
-```
-
-Check duplicates in 'first name' that could have different 'first name' + 'last name'
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-characters.all.df %>% head(10)
-
-```
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-repeated.first.names <- characters.all.df %>%
-  count(name_2) %>%
-  filter(n > 1)
-
-repeated.first.names
-
-```
-
-**Careful, there are repeated first names and these refer to different characters!**
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-characters.all.df %>%
-  filter(name_2 %in% repeated.first.names$name_2, !is.na(name_2)) %>%
-  arrange(name_1)
-
-rm(repeated.first.names)
-
-```
-
-
-
-
-
-Optional: import manually reviewed unmatched character names.
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-unmatched <- read_delim("interim_output/unmatched_names_MOD.csv",
-                        delim = ";") %>%
-  filter(not_ignorable == 1) %$%
-  value
-
-unmatched
-
-```
-
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-map(episode.list.df$transcript, function(x){str_detect(x, pattern = "EDDARDDARDMURE")}) %>% unlist %>% which()
-
-```
-
-
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-stop("Atura't")
-```
-
-patterns to remove names: all , prostitute, EVERYBODY EVERYONE
-
-"ALL"              
-  [6] "ALL THREE"         "ALL TOGETHER"
-
-"MELISANDRE"       
-[191] "MELISDANDRE" MISSANDEI?
-
-"ALLISER"           "ALLISER THORNE"    "ALLISER THRONE"   
- [11] "ALLISTER"
- 
- 
- "BRAN"              "BRAND"?
- 
- CROWD
- 
- "DAENERYS"          "DAERNEYS" "DANERYS"  
-
-"DARIO"             "DARRIO" 
-
-
-"ED"                "EDD"  NED STARK??             
-
-"ELARIA"            "ELLARIA"          
- [86] "ELLIA"   
- 
- 
- BYSTANDERS
- 
- 
- GREY WORM  GREYWORM
- 
-  PLEASE NOTE	(out)  PYCELL PYCELLE
-  
-  
-  QYBURN QYBURNS
-  
-  
-  RAMSAY RAMSEY
-  
-  
-The safest thing to do is to import a list of characters and try to match transcripts to these.
-Then remove unmatched characters.
-
-https://en.wikipedia.org/wiki/List_of_Game_of_Thrones_characters
-
-
-
-
-
-
-
-
-  
-
-Spot repeated character names with two words <- double-check this process
-(i.e. they appear with name + lastname or only name)
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-two.words.names <- all.characters %>%
-  str_match(pattern = "[[:upper:]]+ " %R%  rebus::capture("[[:upper:]]+")) %>%
-  as_data_frame %>%
-  filter(!is.na(V1) & !is.na(V2))
-
-two.words.names
-
-```
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-repeated.names <- two.words.names[two.words.names$V2 %in% all.characters,]
-
-repeated.names %<>%
-  rename(two_words_names = V1,
-         one_word_names = V2)
-
-repeated.names
-
-```
-
-All together? I will have to manually check the names! 
-
-What to do with characters such as young Ned?
-
-Do characters appear after they die? If yes, I should be careful. Look at the pattern. I don't think I want to include as participation if they appear after having died.
-
-
-
-Try first episode
-
-
-Try cleaning first episode
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-characters.first.episode <- first.transcript %>%
-  str_extract_all(pattern = rebus::or("[[:upper:]]+ [[:upper:]]+:", "[[:upper:]]+:")) %>%
-  unlist %>% str_replace_all(pattern = ":", replacement = "") %>% unique %>% sort
-
-```
-
-Check Royce and luwin
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-two.words.names <- characters.first.episode %>%
-  str_match(pattern = "[[:upper:]]+ " %R%  rebus::capture("[[:upper:]]+")) %>%
-  as_data_frame %>%
-  filter(!is.na(V1) & !is.na(V2))
-
-two.words.names
-
-```
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-repeated.names <- two.words.names[two.words.names$V2 %in% characters.first.episode,]
-
-repeated.names %<>%
-  rename(two_words_names = V1,
-         one_word_names = V2)
-
-```
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-first.transcript %>% print()
-
-```
-
-
-First try to split each sentence with author
-
-```{r eval=FALSE, warning=FALSE, message=FALSE}
-
-
-first.transcript.split <- str_split(first.transcript, pattern = capture(rebus::or("\n[[:upper:]]+:","\n[[:upper:]]+ [[:upper:]]+:", "[[:upper:]]+:", "[[:upper:]]+ [[:upper:]]+:")) ) 
-
-
-```
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-names.speakers <- str_match_all(first.transcript, pattern = rebus::or("\n[[:upper:]]+:","\n[[:upper:]]+ [[:upper:]]+:", "[[:upper:]]+:", "[[:upper:]]+ [[:upper:]]+:") ) %>%  
-  unlist %>%
-  str_replace_all(pattern = rebus::or("^[[:cntrl:]]", "[[:punct:]]$"), replacement = "")
-
-first.transcript.split <- str_split(first.transcript, pattern = capture(rebus::or("\n[[:upper:]]+:","\n[[:upper:]]+ [[:upper:]]+:", "[[:upper:]]+:", "[[:upper:]]+ [[:upper:]]+:")) ) %>%
-  unlist %>%
-  str_replace_all(pattern = rebus::or("\n"), replacement = "")
-
-names.speakers %>% head(20)
-
-first.transcript.split %>% head(6)
-
-```
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-first.transcript.df <- data_frame(names_speakers = c(NA,names.speakers), 
-                                  text = first.transcript.split  )
-
-```
-
-
-Replace names of repeated authors with short name
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-first.transcript.df %<>%
-  left_join(repeated.names, by = c("names_speakers" = "two_words_names")) %>%
-  mutate(names_speakers = if_else(!is.na(one_word_names), 
-                                  true = one_word_names,
-                                  false = names_speakers)) %>%
-  select(-one_word_names)
-
-```
-
-
-```{r eval=FALSE, warning=FALSE, message=FALSE}
-
-first.transcript.df %>% knitr::kable()
-
-first.transcript.df
-
-```
-
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-first.transcript.df %>%
-  write_delim("interim_output/first_season_transcript.txt", delim = "|")
-
-```
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-table(first.transcript.df$names_speakers) %>%
-  sort(decreasing = T)
-
-```
-
+# Export objects for exploration
 
