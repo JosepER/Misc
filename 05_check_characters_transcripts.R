@@ -1,12 +1,19 @@
 #Identify characters in transcripts
 
 
+## Start session ----
 
-#Spot character names in transcripts
-#Transcriptions use names both in upper and lower case! 
- # e.g. 
-#* https://genius.com/Game-of-thrones-winter-is-coming-annotated
-#* https://genius.com/Game-of-thrones-the-kingsroad-annotated
+library(stringr)
+library(rebus)
+library(magrittr)
+library(tidyverse)
+
+
+##Spot character names in transcripts
+  ###Transcriptions use names both in upper and lower case! 
+  ### e.g. 
+  ###* https://genius.com/Game-of-thrones-winter-is-coming-annotated
+  ###* https://genius.com/Game-of-thrones-the-kingsroad-annotated
 
 #Ideally, the pattern used should also be able to capture all names in characters scraped from wikipedia (i.e. object: characters.all).
 
@@ -51,6 +58,7 @@ rm(pattern.character.names)
 
 #New:: Alternative pattern 
 #this has to be changed to any character, including "-"
+
 alternative.pattern <- rebus::or("\\.", "\\?") %R% "[[:alpha:]]+" %R% rebus::one_or_more(" [[:alpha:]]+") %R% ":"
 
 
@@ -60,8 +68,6 @@ unlist %>% str_replace_all(pattern = rebus::or(":", "\n", "\\.", "\\?",
 "\\(" %R% rebus::one_or_more("[[:print:]]") %R% "\\)"), replacement = "") %>% 
 unique %>% 
 sort
-
-
 
 
 #All characters in transcripts to upper. This is not the final list and should be further cleaned! 

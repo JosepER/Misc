@@ -6,6 +6,11 @@ editor_options:
 ---
 
 
+characters.dead <- readRDS()
+
+characters.all <- readRDS("interim_output/characters.all.02.RDS")
+
+
 # Clean names in transcritpts
 
 ## Do a quick clean of characters in transcripts

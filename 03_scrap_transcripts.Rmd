@@ -1,6 +1,8 @@
 ---
-title: "Scrap and clean episode transcripts"
+title: "Scrap episode transcripts"
 output: html_notebook
+editor_options: 
+  chunk_output_type: inline
 ---
 
 Aim:
@@ -26,9 +28,6 @@ library(tidyverse)
 #Import data from previous scripts
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-characters.dead <- readRDS("interim_output/characters.death.long.02.RDS")
-
-characters.all <- readRDS("interim_output/characters.all.02.RDS")
 
 ```
 
@@ -196,4 +195,11 @@ episode.list.df$transcript[3] %>%
 
 ```
 
+# Export objects
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+episode.list.df %>%
+  write_rds("interim_output/episode_list_transcripts.RDS")
+
+```
 
