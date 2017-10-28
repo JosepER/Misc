@@ -172,115 +172,114 @@ $(document).ready(function () {
 
 
 <!-- rnb-text-begin -->
+<div id="prepare-session" class="section level1">
+<h1>Prepare session</h1>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5saWJyYXJ5KHN0cmluZ3IpXG5saWJyYXJ5KHJlYnVzKVxubGlicmFyeShtYWdyaXR0cilcbmxpYnJhcnkodGlkeXZlcnNlKVxuXG5gYGAifQ== -->
-<pre class="r"><code>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucm0obGlzdCA9IGxzKCkpXG5saWJyYXJ5KHN0cmluZ3IpXG5saWJyYXJ5KHJlYnVzKVxubGlicmFyeShtYWdyaXR0cilcbmxpYnJhcnkodGlkeXZlcnNlKVxuYGBgIn0= -->
+<pre class="r"><code>rm(list = ls())
 library(stringr)
 library(rebus)
 library(magrittr)
-library(tidyverse)
-</code></pre>
+library(tidyverse)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<div id="spot-character-names-in-transcripts" class="section level2">
-<h2>Spot character names in transcripts</h2>
-<p>###Transcriptions use names both in upper and lower case! ### e.g. ###* <a href="https://genius.com/Game-of-thrones-winter-is-coming-annotated" class="uri">https://genius.com/Game-of-thrones-winter-is-coming-annotated</a> ###* <a href="https://genius.com/Game-of-thrones-the-kingsroad-annotated" class="uri">https://genius.com/Game-of-thrones-the-kingsroad-annotated</a></p>
 </div>
-<div id="ideally-the-pattern-used-should-also-be-able-to-capture-all-names-in-characters-scraped-from-wikipedia-i.e.object-characters.all." class="section level1">
-<h1>Ideally, the pattern used should also be able to capture all names in characters scraped from wikipedia (i.e. object: characters.all).</h1>
-</div>
-<div id="there-are-some-transcripts-that-use-n-pattern-others-that-dont" class="section level1">
-<h1>There are some transcripts that use  n pattern, others that don’t</h1>
-</div>
-<div id="there-are-patterns-of-name-in-valerian-e.g" class="section level1">
-<h1>There are patterns of ‘NAME (in valerian)’ e.g:</h1>
-</div>
-<div id="cersei-sighs-thank-you-so-much-for-your-kind-words." class="section level1">
-<h1>‘CERSEI (sighs): Thank you so much for your kind words’.</h1>
-</div>
-<div id="names-can-have-one-or-multiple-words." class="section level1">
-<h1>Names can have one or multiple words.</h1>
-<div id="to-do-names-can-be-preceeded-by-an-interrogation-mark-in-previous-line." class="section level2">
-<h2>TO DO: names can be preceeded by an interrogation mark in previous line.</h2>
+<div id="import-data-from-previous-scripts" class="section level1">
+<h1>Import data from previous scripts</h1>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5wYXR0ZXJuLmNoYXJhY3Rlci5uYW1lcyA8LSByZWJ1czo6b3IoXCJcXFxcLltbOmFscGhhOl1dK1wiICVSJSByZWJ1czo6b25lX29yX21vcmUoXCIgW1s6YWxwaGE6XV0rXCIpICVSJSBcIjpcIixcblwiXFxuW1s6YWxwaGE6XV0rXCIgJVIlIHJlYnVzOjpvbmVfb3JfbW9yZShcIiBbWzphbHBoYTpdXStcIikgJVIlIFwiOlwiLFxuXCJcXG5bWzphbHBoYTpdXStcIiAlUiUgcmVidXM6Onplcm9fb3JfbW9yZShcIiBbWzphbHBoYTpdXStcIikgJVIlIFwiIFxcXFwoXCIgJVIlIHJlYnVzOjpvbmVfb3JfbW9yZShyZWJ1czo6b3IoXCJbWzphbHBoYTpdXVwiLFwiXFxcXHNcIikpICVSJSBcIlxcXFwpOlwiLFxuXCJcXFxcLltbOmFscGhhOl1dK1wiICVSJSByZWJ1czo6emVyb19vcl9tb3JlKFwiIFtbOmFscGhhOl1dK1wiKSAlUiUgXCIgXFxcXChcIiAlUiUgcmVidXM6Om9uZV9vcl9tb3JlKHJlYnVzOjpvcihcIltbOmFscGhhOl1dXCIsXCJcXFxcc1wiKSkgJVIlIFwiXFxcXCk6XCIpXG5cbmBgYCJ9 -->
-<pre class="r"><code>
-pattern.character.names &lt;- rebus::or(&quot;\\.[[:alpha:]]+&quot; %R% rebus::one_or_more(&quot; [[:alpha:]]+&quot;) %R% &quot;:&quot;,
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZXBpc29kZS5saXN0LmRmIDwtIHJlYWRfcmRzKFwiaW50ZXJpbV9vdXRwdXQvZXBpc29kZV9saXN0X3RyYW5zY3JpcHRzLlJEU1wiKVxuYGBgIn0= -->
+<pre class="r"><code>episode.list.df &lt;- read_rds(&quot;interim_output/episode_list_transcripts.RDS&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="spot-character-names-in-transcripts" class="section level1">
+<h1>Spot character names in transcripts</h1>
+<p>Transcriptions use names both in upper and lower case! e.g. * <a href="https://genius.com/Game-of-thrones-winter-is-coming-annotated" class="uri">https://genius.com/Game-of-thrones-winter-is-coming-annotated</a> * <a href="https://genius.com/Game-of-thrones-the-kingsroad-annotated" class="uri">https://genius.com/Game-of-thrones-the-kingsroad-annotated</a></p>
+<p>Ideally, the pattern used should also be able to capture all names in characters scraped from wikipedia (i.e. object: characters.all).</p>
+<p>There are some transcripts that use  n pattern, others that don’t</p>
+<p>There are patterns of ‘NAME (in valerian)’ e.g: ‘CERSEI (sighs): Thank you so much for your kind words’.</p>
+<p>Names can have one or multiple words.</p>
+<p><strong>TO DO: names can be preceeded by an interrogation mark in previous line. </strong> TO DO: this has to be changed to any character, including “-”</p>
+<div id="pattern-to-detect-and-extract-character-names" class="section level2">
+<h2>Pattern to detect and extract character names</h2>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGF0dGVybi5jaGFyYWN0ZXIubmFtZXMgPC0gcmVidXM6Om9yKFwiXFxcXC5bWzphbHBoYTpdXStcIiAlUiUgcmVidXM6Om9uZV9vcl9tb3JlKFwiIFtbOmFscGhhOl1dK1wiKSAlUiUgXCI6XCIsXG5cIlxcbltbOmFscGhhOl1dK1wiICVSJSByZWJ1czo6b25lX29yX21vcmUoXCIgW1s6YWxwaGE6XV0rXCIpICVSJSBcIjpcIixcblwiXFxuW1s6YWxwaGE6XV0rXCIgJVIlIHJlYnVzOjp6ZXJvX29yX21vcmUoXCIgW1s6YWxwaGE6XV0rXCIpICVSJSBcIiBcXFxcKFwiICVSJSByZWJ1czo6b25lX29yX21vcmUocmVidXM6Om9yKFwiW1s6YWxwaGE6XV1cIixcIlxcXFxzXCIpKSAlUiUgXCJcXFxcKTpcIixcblwiXFxcXC5bWzphbHBoYTpdXStcIiAlUiUgcmVidXM6Onplcm9fb3JfbW9yZShcIiBbWzphbHBoYTpdXStcIikgJVIlIFwiIFxcXFwoXCIgJVIlIHJlYnVzOjpvbmVfb3JfbW9yZShyZWJ1czo6b3IoXCJbWzphbHBoYTpdXVwiLFwiXFxcXHNcIikpICVSJSBcIlxcXFwpOlwiKVxuYGBgIn0= -->
+<pre class="r"><code>pattern.character.names &lt;- rebus::or(&quot;\\.[[:alpha:]]+&quot; %R% rebus::one_or_more(&quot; [[:alpha:]]+&quot;) %R% &quot;:&quot;,
 &quot;\n[[:alpha:]]+&quot; %R% rebus::one_or_more(&quot; [[:alpha:]]+&quot;) %R% &quot;:&quot;,
 &quot;\n[[:alpha:]]+&quot; %R% rebus::zero_or_more(&quot; [[:alpha:]]+&quot;) %R% &quot; \\(&quot; %R% rebus::one_or_more(rebus::or(&quot;[[:alpha:]]&quot;,&quot;\\s&quot;)) %R% &quot;\\):&quot;,
-&quot;\\.[[:alpha:]]+&quot; %R% rebus::zero_or_more(&quot; [[:alpha:]]+&quot;) %R% &quot; \\(&quot; %R% rebus::one_or_more(rebus::or(&quot;[[:alpha:]]&quot;,&quot;\\s&quot;)) %R% &quot;\\):&quot;)
-</code></pre>
+&quot;\\.[[:alpha:]]+&quot; %R% rebus::zero_or_more(&quot; [[:alpha:]]+&quot;) %R% &quot; \\(&quot; %R% rebus::one_or_more(rebus::or(&quot;[[:alpha:]]&quot;,&quot;\\s&quot;)) %R% &quot;\\):&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p><strong>Export pattern to next script</strong></p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGF0dGVybi5jaGFyYWN0ZXIubmFtZXMgJT4lIFxuICB3cml0ZV9yZHMoXCJpbnRlcmltX291dHB1dC9yZWdleF9wYXR0ZXJuX2lkZW50aWZ5X2NoYXJhY3RlcnNfdHJhbnNjcmlwdHMuUkRTXCIpXG5gYGAifQ== -->
+<pre class="r"><code>pattern.character.names %&gt;% 
+  write_rds(&quot;interim_output/regex_pattern_identify_characters_transcripts.RDS&quot;)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 </div>
-</div>
-<div id="manually-explore-matched-characters" class="section level1">
-<h1>Manually explore matched characters</h1>
-<p>TO DO: This has to be exported to script 05</p>
+<div id="alternative-pattern-space-to-check-alternative-patterns" class="section level2">
+<h2>Alternative pattern (space to check alternative patterns)</h2>
+<p>TO DO: this has to be changed to any character, including “-”</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjpbImVwaXNvZGUubGlzdC5kZiAlPiUgc2VsZWN0KHRyYW5zY3JpcHQpICU+JSBmaWx0ZXIoIWlzLm5hKHRyYW5zY3JpcHQpKSAlPiUgcHVycnI6OnRyYW5zcG9zZSgpICU+JSIsIm1hcChmdW5jdGlvbih4KXtzdHJfdmlld19hbGwoeCwgcGF0dGVybi5jaGFyYWN0ZXIubmFtZXMpfSkiXX0= -->
-<pre class="r"><code>episode.list.df %&gt;% select(transcript) %&gt;% filter(!is.na(transcript)) %&gt;% purrr::transpose() %&gt;%
-map(function(x){str_view_all(x, pattern.character.names)})</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYWx0ZXJuYXRpdmUucGF0dGVybiA8LSByZWJ1czo6b3IoXCJcXFxcLlwiLCBcIlxcXFw/XCIpICVSJSBcIltbOmFscGhhOl1dK1wiICVSJSByZWJ1czo6b25lX29yX21vcmUoXCIgW1s6YWxwaGE6XV0rXCIpICVSJSBcIjpcIlxuYGBgIn0= -->
+<pre class="r"><code>alternative.pattern &lt;- rebus::or(&quot;\\.&quot;, &quot;\\?&quot;) %R% &quot;[[:alpha:]]+&quot; %R% rebus::one_or_more(&quot; [[:alpha:]]+&quot;) %R% &quot;:&quot;</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p><strong>Export alternative pattern to next script</strong></p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYWx0ZXJuYXRpdmUucGF0dGVybiAlPiUgXG4gIHdyaXRlX3JkcyhcImludGVyaW1fb3V0cHV0L3JlZ2V4X2FsdGVybmF0aXZlX3BhdHRlcm5faWRlbnRpZnlfY2hhcmFjdGVyc190cmFuc2NyaXB0cy5SRFNcIilcbmBgYCJ9 -->
+<pre class="r"><code>alternative.pattern %&gt;% 
+  write_rds(&quot;interim_output/regex_alternative_pattern_identify_characters_transcripts.RDS&quot;)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 </div>
-<div id="to-do-maybe-use-another-script-for-this" class="section level1">
-<h1>To do: Maybe use another script for this</h1>
+<div id="apply-pattern-to-obtain-characters" class="section level2">
+<h2>Apply pattern to obtain characters</h2>
+<p>** Main pattern**</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5zdHJfdmlld19hbGwoZXBpc29kZS5saXN0LmRmJHRyYW5zY3JpcHRbMl0sIHBhdHRlcm4uY2hhcmFjdGVyLm5hbWVzKVxuXG5gYGAifQ== -->
-<pre class="r"><code>
-str_view_all(episode.list.df$transcript[2], pattern.character.names)
-</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5jaGFyYWN0ZXJzLnRyYW5zY3JpcHRzIDwtIGVwaXNvZGUubGlzdC5kZiR0cmFuc2NyaXB0ICU+JVxuc3RyX2V4dHJhY3RfYWxsKHBhdHRlcm4gPSBwYXR0ZXJuLmNoYXJhY3Rlci5uYW1lcykgJT4lXG51bmxpc3QgJT4lIHN0cl9yZXBsYWNlX2FsbChwYXR0ZXJuID0gcmVidXM6Om9yKFwiOlwiLCBcIlxcblwiLCBcIlxcXFwuXCIsIFxuXCJcXFxcKFwiICVSJSByZWJ1czo6b25lX29yX21vcmUoXCJbWzpwcmludDpdXVwiKSAlUiUgXCJcXFxcKVwiKSwgcmVwbGFjZW1lbnQgPSBcIlwiKSAlPiUgXG51bmlxdWUgJT4lIFxuc29ydFxuXG5ybShwYXR0ZXJuLmNoYXJhY3Rlci5uYW1lcylcblxuYGBgIn0= -->
-<pre class="r"><code>
-characters.transcripts &lt;- episode.list.df$transcript %&gt;%
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2hhcmFjdGVycy50cmFuc2NyaXB0cyA8LSBlcGlzb2RlLmxpc3QuZGYkdHJhbnNjcmlwdCAlPiVcbnN0cl9leHRyYWN0X2FsbChwYXR0ZXJuID0gcGF0dGVybi5jaGFyYWN0ZXIubmFtZXMpICU+JVxudW5saXN0ICU+JSBzdHJfcmVwbGFjZV9hbGwocGF0dGVybiA9IHJlYnVzOjpvcihcIjpcIiwgXCJcXG5cIiwgXCJcXFxcLlwiLCBcblwiXFxcXChcIiAlUiUgcmVidXM6Om9uZV9vcl9tb3JlKFwiW1s6cHJpbnQ6XV1cIikgJVIlIFwiXFxcXClcIiksIHJlcGxhY2VtZW50ID0gXCJcIikgJT4lIFxudW5pcXVlICU+JSBcbnNvcnRcbnJtKHBhdHRlcm4uY2hhcmFjdGVyLm5hbWVzKVxuYGBgIn0= -->
+<pre class="r"><code>characters.transcripts &lt;- episode.list.df$transcript %&gt;%
 str_extract_all(pattern = pattern.character.names) %&gt;%
 unlist %&gt;% str_replace_all(pattern = rebus::or(&quot;:&quot;, &quot;\n&quot;, &quot;\\.&quot;, 
 &quot;\\(&quot; %R% rebus::one_or_more(&quot;[[:print:]]&quot;) %R% &quot;\\)&quot;), replacement = &quot;&quot;) %&gt;% 
 unique %&gt;% 
 sort
-
-rm(pattern.character.names)
-</code></pre>
+rm(pattern.character.names)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-</div>
-<div id="new-alternative-pattern" class="section level1">
-<h1>New:: Alternative pattern</h1>
-<p>this has to be changed to any character, including “-”</p>
+<p><strong>Alternative pattern</strong></p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5hbHRlcm5hdGl2ZS5wYXR0ZXJuIDwtIHJlYnVzOjpvcihcIlxcXFwuXCIsIFwiXFxcXD9cIikgJVIlIFwiW1s6YWxwaGE6XV0rXCIgJVIlIHJlYnVzOjpvbmVfb3JfbW9yZShcIiBbWzphbHBoYTpdXStcIikgJVIlIFwiOlwiXG5cblxuY2hhcmFjdGVycy50cmFuc2NyaXB0cy5hbHRlcm5hdGl2ZSA8LSBlcGlzb2RlLmxpc3QuZGYkdHJhbnNjcmlwdCAlPiVcbnN0cl9leHRyYWN0X2FsbChwYXR0ZXJuID0gYWx0ZXJuYXRpdmUucGF0dGVybikgJT4lXG51bmxpc3QgJT4lIHN0cl9yZXBsYWNlX2FsbChwYXR0ZXJuID0gcmVidXM6Om9yKFwiOlwiLCBcIlxcblwiLCBcIlxcXFwuXCIsIFwiXFxcXD9cIiwgXG5cIlxcXFwoXCIgJVIlIHJlYnVzOjpvbmVfb3JfbW9yZShcIltbOnByaW50Ol1dXCIpICVSJSBcIlxcXFwpXCIpLCByZXBsYWNlbWVudCA9IFwiXCIpICU+JSBcbnVuaXF1ZSAlPiUgXG5zb3J0XG5cbmBgYCJ9 -->
-<pre class="r"><code>
-alternative.pattern &lt;- rebus::or(&quot;\\.&quot;, &quot;\\?&quot;) %R% &quot;[[:alpha:]]+&quot; %R% rebus::one_or_more(&quot; [[:alpha:]]+&quot;) %R% &quot;:&quot;
-
-
-characters.transcripts.alternative &lt;- episode.list.df$transcript %&gt;%
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2hhcmFjdGVycy50cmFuc2NyaXB0cy5hbHRlcm5hdGl2ZSA8LSBlcGlzb2RlLmxpc3QuZGYkdHJhbnNjcmlwdCAlPiVcbnN0cl9leHRyYWN0X2FsbChwYXR0ZXJuID0gYWx0ZXJuYXRpdmUucGF0dGVybikgJT4lXG51bmxpc3QgJT4lIHN0cl9yZXBsYWNlX2FsbChwYXR0ZXJuID0gcmVidXM6Om9yKFwiOlwiLCBcIlxcblwiLCBcIlxcXFwuXCIsIFwiXFxcXD9cIiwgXG5cIlxcXFwoXCIgJVIlIHJlYnVzOjpvbmVfb3JfbW9yZShcIltbOnByaW50Ol1dXCIpICVSJSBcIlxcXFwpXCIpLCByZXBsYWNlbWVudCA9IFwiXCIpICU+JSBcbnVuaXF1ZSAlPiUgXG5zb3J0XG5ybShhbHRlcm5hdGl2ZS5wYXR0ZXJuKVxuYGBgIn0= -->
+<pre class="r"><code>characters.transcripts.alternative &lt;- episode.list.df$transcript %&gt;%
 str_extract_all(pattern = alternative.pattern) %&gt;%
 unlist %&gt;% str_replace_all(pattern = rebus::or(&quot;:&quot;, &quot;\n&quot;, &quot;\\.&quot;, &quot;\\?&quot;, 
 &quot;\\(&quot; %R% rebus::one_or_more(&quot;[[:print:]]&quot;) %R% &quot;\\)&quot;), replacement = &quot;&quot;) %&gt;% 
 unique %&gt;% 
 sort
-</code></pre>
+rm(alternative.pattern)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 </div>
-<div id="all-characters-in-transcripts-to-upper.-this-is-not-the-final-list-and-should-be-further-cleaned" class="section level1">
-<h1>All characters in transcripts to upper. This is not the final list and should be further cleaned!</h1>
+<div id="characters-to-upper" class="section level2">
+<h2>Characters to upper</h2>
+<p>This is not the final list. Characters have to be cleaned in further scripts.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5jaGFyYWN0ZXJzLnRyYW5zY3JpcHRzICU8PiVcbnRvdXBwZXIoKSAlPiUgXG5zdHJfdHJpbShzaWRlID0gXCJyaWdodFwiKSAlPiVcbnVuaXF1ZVxuXG5jaGFyYWN0ZXJzLnRyYW5zY3JpcHRzXG5cbmBgYCJ9 -->
@@ -294,9 +293,23 @@ characters.transcripts
 </code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="export-matched-characters" class="section level2">
+<h2>Export matched characters</h2>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2hhcmFjdGVycy50cmFuc2NyaXB0cyAlPiVcbiAgd3JpdGVfcmRzKFwiaW50ZXJpbV9vdXRwdXQvY2hhcmFjdGVyc19tYXRjaGVkX3RyYW5zY3JpcHRzLlJEU1wiKVxuYGBgIn0= -->
+<pre class="r"><code>characters.transcripts %&gt;%
+  write_rds(&quot;interim_output/characters_matched_transcripts.RDS&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+</div>
 </div>
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIklkZW50aWZ5IGNoYXJhY3RlcnMgaW4gdHJhbnNjcmlwdHMiDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCmVkaXRvcl9vcHRpb25zOiANCiAgY2h1bmtfb3V0cHV0X3R5cGU6IGlubGluZQ0KLS0tDQoNCg0KYGBge3IgZXZhbD1UUlVFLCB3YXJuaW5nPUZBTFNFLCBtZXNzYWdlPUZBTFNFfQ0KDQpsaWJyYXJ5KHN0cmluZ3IpDQpsaWJyYXJ5KHJlYnVzKQ0KbGlicmFyeShtYWdyaXR0cikNCmxpYnJhcnkodGlkeXZlcnNlKQ0KDQpgYGANCg0KDQojI1Nwb3QgY2hhcmFjdGVyIG5hbWVzIGluIHRyYW5zY3JpcHRzDQogICMjI1RyYW5zY3JpcHRpb25zIHVzZSBuYW1lcyBib3RoIGluIHVwcGVyIGFuZCBsb3dlciBjYXNlISANCiAgIyMjIGUuZy4gDQogICMjIyogaHR0cHM6Ly9nZW5pdXMuY29tL0dhbWUtb2YtdGhyb25lcy13aW50ZXItaXMtY29taW5nLWFubm90YXRlZA0KICAjIyMqIGh0dHBzOi8vZ2VuaXVzLmNvbS9HYW1lLW9mLXRocm9uZXMtdGhlLWtpbmdzcm9hZC1hbm5vdGF0ZWQNCg0KI0lkZWFsbHksIHRoZSBwYXR0ZXJuIHVzZWQgc2hvdWxkIGFsc28gYmUgYWJsZSB0byBjYXB0dXJlIGFsbCBuYW1lcyBpbiBjaGFyYWN0ZXJzIHNjcmFwZWQgZnJvbSB3aWtpcGVkaWEgKGkuZS4gb2JqZWN0OiBjaGFyYWN0ZXJzLmFsbCkuDQoNCiNUaGVyZSBhcmUgc29tZSB0cmFuc2NyaXB0cyB0aGF0IHVzZSBcIG4gcGF0dGVybiwgb3RoZXJzIHRoYXQgZG9uJ3QNCg0KI1RoZXJlIGFyZSBwYXR0ZXJucyBvZiAnTkFNRSAoaW4gdmFsZXJpYW4pJyBlLmc6DQojJ0NFUlNFSSAoc2lnaHMpOiBUaGFuayB5b3Ugc28gbXVjaCBmb3IgeW91ciBraW5kIHdvcmRzJy4NCg0KI05hbWVzIGNhbiBoYXZlIG9uZSBvciBtdWx0aXBsZSB3b3Jkcy4NCg0KIyMgVE8gRE86IG5hbWVzIGNhbiBiZSBwcmVjZWVkZWQgYnkgYW4gaW50ZXJyb2dhdGlvbiBtYXJrIGluIHByZXZpb3VzIGxpbmUuIA0KDQpgYGB7ciBldmFsPVRSVUUsIHdhcm5pbmc9RkFMU0UsIG1lc3NhZ2U9RkFMU0V9DQoNCnBhdHRlcm4uY2hhcmFjdGVyLm5hbWVzIDwtIHJlYnVzOjpvcigiXFwuW1s6YWxwaGE6XV0rIiAlUiUgcmVidXM6Om9uZV9vcl9tb3JlKCIgW1s6YWxwaGE6XV0rIikgJVIlICI6IiwNCiJcbltbOmFscGhhOl1dKyIgJVIlIHJlYnVzOjpvbmVfb3JfbW9yZSgiIFtbOmFscGhhOl1dKyIpICVSJSAiOiIsDQoiXG5bWzphbHBoYTpdXSsiICVSJSByZWJ1czo6emVyb19vcl9tb3JlKCIgW1s6YWxwaGE6XV0rIikgJVIlICIgXFwoIiAlUiUgcmVidXM6Om9uZV9vcl9tb3JlKHJlYnVzOjpvcigiW1s6YWxwaGE6XV0iLCJcXHMiKSkgJVIlICJcXCk6IiwNCiJcXC5bWzphbHBoYTpdXSsiICVSJSByZWJ1czo6emVyb19vcl9tb3JlKCIgW1s6YWxwaGE6XV0rIikgJVIlICIgXFwoIiAlUiUgcmVidXM6Om9uZV9vcl9tb3JlKHJlYnVzOjpvcigiW1s6YWxwaGE6XV0iLCJcXHMiKSkgJVIlICJcXCk6IikNCg0KYGBgDQoNCiNNYW51YWxseSBleHBsb3JlIG1hdGNoZWQgY2hhcmFjdGVycw0KVE8gRE86IFRoaXMgaGFzIHRvIGJlIGV4cG9ydGVkIHRvIHNjcmlwdCAwNQ0KYGBge3IgZXZhbD1GQUxTRSwgd2FybmluZz1GQUxTRSwgbWVzc2FnZT1GQUxTRX0NCg0KZXBpc29kZS5saXN0LmRmICU+JSBzZWxlY3QodHJhbnNjcmlwdCkgJT4lIGZpbHRlcighaXMubmEodHJhbnNjcmlwdCkpICU+JSBwdXJycjo6dHJhbnNwb3NlKCkgJT4lDQptYXAoZnVuY3Rpb24oeCl7c3RyX3ZpZXdfYWxsKHgsIHBhdHRlcm4uY2hhcmFjdGVyLm5hbWVzKX0pDQoNCmBgYA0KDQojVG8gZG86IE1heWJlIHVzZSBhbm90aGVyIHNjcmlwdCBmb3IgdGhpcw0KDQpgYGB7ciBldmFsPVRSVUUsIHdhcm5pbmc9RkFMU0UsIG1lc3NhZ2U9RkFMU0V9DQoNCnN0cl92aWV3X2FsbChlcGlzb2RlLmxpc3QuZGYkdHJhbnNjcmlwdFsyXSwgcGF0dGVybi5jaGFyYWN0ZXIubmFtZXMpDQoNCmBgYA0KDQpgYGB7ciBldmFsPVRSVUUsIHdhcm5pbmc9RkFMU0UsIG1lc3NhZ2U9RkFMU0V9DQoNCmNoYXJhY3RlcnMudHJhbnNjcmlwdHMgPC0gZXBpc29kZS5saXN0LmRmJHRyYW5zY3JpcHQgJT4lDQpzdHJfZXh0cmFjdF9hbGwocGF0dGVybiA9IHBhdHRlcm4uY2hhcmFjdGVyLm5hbWVzKSAlPiUNCnVubGlzdCAlPiUgc3RyX3JlcGxhY2VfYWxsKHBhdHRlcm4gPSByZWJ1czo6b3IoIjoiLCAiXG4iLCAiXFwuIiwgDQoiXFwoIiAlUiUgcmVidXM6Om9uZV9vcl9tb3JlKCJbWzpwcmludDpdXSIpICVSJSAiXFwpIiksIHJlcGxhY2VtZW50ID0gIiIpICU+JSANCnVuaXF1ZSAlPiUgDQpzb3J0DQoNCnJtKHBhdHRlcm4uY2hhcmFjdGVyLm5hbWVzKQ0KDQpgYGANCg0KI05ldzo6IEFsdGVybmF0aXZlIHBhdHRlcm4gDQp0aGlzIGhhcyB0byBiZSBjaGFuZ2VkIHRvIGFueSBjaGFyYWN0ZXIsIGluY2x1ZGluZyAiLSINCg0KYGBge3IgZXZhbD1UUlVFLCB3YXJuaW5nPUZBTFNFLCBtZXNzYWdlPUZBTFNFfQ0KDQphbHRlcm5hdGl2ZS5wYXR0ZXJuIDwtIHJlYnVzOjpvcigiXFwuIiwgIlxcPyIpICVSJSAiW1s6YWxwaGE6XV0rIiAlUiUgcmVidXM6Om9uZV9vcl9tb3JlKCIgW1s6YWxwaGE6XV0rIikgJVIlICI6Ig0KDQoNCmNoYXJhY3RlcnMudHJhbnNjcmlwdHMuYWx0ZXJuYXRpdmUgPC0gZXBpc29kZS5saXN0LmRmJHRyYW5zY3JpcHQgJT4lDQpzdHJfZXh0cmFjdF9hbGwocGF0dGVybiA9IGFsdGVybmF0aXZlLnBhdHRlcm4pICU+JQ0KdW5saXN0ICU+JSBzdHJfcmVwbGFjZV9hbGwocGF0dGVybiA9IHJlYnVzOjpvcigiOiIsICJcbiIsICJcXC4iLCAiXFw/IiwgDQoiXFwoIiAlUiUgcmVidXM6Om9uZV9vcl9tb3JlKCJbWzpwcmludDpdXSIpICVSJSAiXFwpIiksIHJlcGxhY2VtZW50ID0gIiIpICU+JSANCnVuaXF1ZSAlPiUgDQpzb3J0DQoNCmBgYA0KDQojQWxsIGNoYXJhY3RlcnMgaW4gdHJhbnNjcmlwdHMgdG8gdXBwZXIuIFRoaXMgaXMgbm90IHRoZSBmaW5hbCBsaXN0IGFuZCBzaG91bGQgYmUgZnVydGhlciBjbGVhbmVkISANCg0KYGBge3IgZXZhbD1UUlVFLCB3YXJuaW5nPUZBTFNFLCBtZXNzYWdlPUZBTFNFfQ0KDQpjaGFyYWN0ZXJzLnRyYW5zY3JpcHRzICU8PiUNCnRvdXBwZXIoKSAlPiUgDQpzdHJfdHJpbShzaWRlID0gInJpZ2h0IikgJT4lDQp1bmlxdWUNCg0KY2hhcmFjdGVycy50cmFuc2NyaXB0cw0KDQpgYGANCg==</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIklkZW50aWZ5IGNoYXJhY3RlcnMgaW4gdHJhbnNjcmlwdHMiDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCmVkaXRvcl9vcHRpb25zOiANCiAgY2h1bmtfb3V0cHV0X3R5cGU6IGlubGluZQ0KLS0tDQoNCiMgUHJlcGFyZSBzZXNzaW9uDQoNCmBgYHtyIGV2YWw9VFJVRSwgd2FybmluZz1GQUxTRSwgbWVzc2FnZT1GQUxTRX0NCg0Kcm0obGlzdCA9IGxzKCkpDQoNCmxpYnJhcnkoc3RyaW5ncikNCmxpYnJhcnkocmVidXMpDQpsaWJyYXJ5KG1hZ3JpdHRyKQ0KbGlicmFyeSh0aWR5dmVyc2UpDQoNCmBgYA0KDQojIEltcG9ydCBkYXRhIGZyb20gcHJldmlvdXMgc2NyaXB0cyANCg0KYGBge3IgZXZhbD1UUlVFLCB3YXJuaW5nPUZBTFNFLCBtZXNzYWdlPUZBTFNFfQ0KDQplcGlzb2RlLmxpc3QuZGYgPC0gcmVhZF9yZHMoImludGVyaW1fb3V0cHV0L2VwaXNvZGVfbGlzdF90cmFuc2NyaXB0cy5SRFMiKQ0KDQpgYGANCg0KDQojU3BvdCBjaGFyYWN0ZXIgbmFtZXMgaW4gdHJhbnNjcmlwdHMNClRyYW5zY3JpcHRpb25zIHVzZSBuYW1lcyBib3RoIGluIHVwcGVyIGFuZCBsb3dlciBjYXNlISANCmUuZy4gDQoqIGh0dHBzOi8vZ2VuaXVzLmNvbS9HYW1lLW9mLXRocm9uZXMtd2ludGVyLWlzLWNvbWluZy1hbm5vdGF0ZWQNCiogaHR0cHM6Ly9nZW5pdXMuY29tL0dhbWUtb2YtdGhyb25lcy10aGUta2luZ3Nyb2FkLWFubm90YXRlZA0KDQpJZGVhbGx5LCB0aGUgcGF0dGVybiB1c2VkIHNob3VsZCBhbHNvIGJlIGFibGUgdG8gY2FwdHVyZSBhbGwgbmFtZXMgaW4gY2hhcmFjdGVycyBzY3JhcGVkIGZyb20gd2lraXBlZGlhIChpLmUuIG9iamVjdDogY2hhcmFjdGVycy5hbGwpLg0KDQpUaGVyZSBhcmUgc29tZSB0cmFuc2NyaXB0cyB0aGF0IHVzZSBcIG4gcGF0dGVybiwgb3RoZXJzIHRoYXQgZG9uJ3QNCg0KVGhlcmUgYXJlIHBhdHRlcm5zIG9mICdOQU1FIChpbiB2YWxlcmlhbiknIGUuZzoNCidDRVJTRUkgKHNpZ2hzKTogVGhhbmsgeW91IHNvIG11Y2ggZm9yIHlvdXIga2luZCB3b3JkcycuDQoNCk5hbWVzIGNhbiBoYXZlIG9uZSBvciBtdWx0aXBsZSB3b3Jkcy4NCg0KKipUTyBETzogbmFtZXMgY2FuIGJlIHByZWNlZWRlZCBieSBhbiBpbnRlcnJvZ2F0aW9uIG1hcmsgaW4gcHJldmlvdXMgbGluZS4gKioNClRPIERPOiB0aGlzIGhhcyB0byBiZSBjaGFuZ2VkIHRvIGFueSBjaGFyYWN0ZXIsIGluY2x1ZGluZyAiLSINCg0KIyMgUGF0dGVybiB0byBkZXRlY3QgYW5kIGV4dHJhY3QgY2hhcmFjdGVyIG5hbWVzIA0KYGBge3IgZXZhbD1UUlVFLCB3YXJuaW5nPUZBTFNFLCBtZXNzYWdlPUZBTFNFfQ0KDQpwYXR0ZXJuLmNoYXJhY3Rlci5uYW1lcyA8LSByZWJ1czo6b3IoIlxcLltbOmFscGhhOl1dKyIgJVIlIHJlYnVzOjpvbmVfb3JfbW9yZSgiIFtbOmFscGhhOl1dKyIpICVSJSAiOiIsDQoiXG5bWzphbHBoYTpdXSsiICVSJSByZWJ1czo6b25lX29yX21vcmUoIiBbWzphbHBoYTpdXSsiKSAlUiUgIjoiLA0KIlxuW1s6YWxwaGE6XV0rIiAlUiUgcmVidXM6Onplcm9fb3JfbW9yZSgiIFtbOmFscGhhOl1dKyIpICVSJSAiIFxcKCIgJVIlIHJlYnVzOjpvbmVfb3JfbW9yZShyZWJ1czo6b3IoIltbOmFscGhhOl1dIiwiXFxzIikpICVSJSAiXFwpOiIsDQoiXFwuW1s6YWxwaGE6XV0rIiAlUiUgcmVidXM6Onplcm9fb3JfbW9yZSgiIFtbOmFscGhhOl1dKyIpICVSJSAiIFxcKCIgJVIlIHJlYnVzOjpvbmVfb3JfbW9yZShyZWJ1czo6b3IoIltbOmFscGhhOl1dIiwiXFxzIikpICVSJSAiXFwpOiIpDQoNCmBgYA0KDQoqKkV4cG9ydCBwYXR0ZXJuIHRvIG5leHQgc2NyaXB0KioNCmBgYHtyIGV2YWw9VFJVRSwgd2FybmluZz1GQUxTRSwgbWVzc2FnZT1GQUxTRX0NCg0KcGF0dGVybi5jaGFyYWN0ZXIubmFtZXMgJT4lIA0KICB3cml0ZV9yZHMoImludGVyaW1fb3V0cHV0L3JlZ2V4X3BhdHRlcm5faWRlbnRpZnlfY2hhcmFjdGVyc190cmFuc2NyaXB0cy5SRFMiKQ0KDQpgYGANCg0KDQojIyBBbHRlcm5hdGl2ZSBwYXR0ZXJuIChzcGFjZSB0byBjaGVjayBhbHRlcm5hdGl2ZSBwYXR0ZXJucykNClRPIERPOiB0aGlzIGhhcyB0byBiZSBjaGFuZ2VkIHRvIGFueSBjaGFyYWN0ZXIsIGluY2x1ZGluZyAiLSINCg0KYGBge3IgZXZhbD1UUlVFLCB3YXJuaW5nPUZBTFNFLCBtZXNzYWdlPUZBTFNFfQ0KDQphbHRlcm5hdGl2ZS5wYXR0ZXJuIDwtIHJlYnVzOjpvcigiXFwuIiwgIlxcPyIpICVSJSAiW1s6YWxwaGE6XV0rIiAlUiUgcmVidXM6Om9uZV9vcl9tb3JlKCIgW1s6YWxwaGE6XV0rIikgJVIlICI6Ig0KDQpgYGANCg0KKipFeHBvcnQgYWx0ZXJuYXRpdmUgcGF0dGVybiB0byBuZXh0IHNjcmlwdCoqDQpgYGB7ciBldmFsPVRSVUUsIHdhcm5pbmc9RkFMU0UsIG1lc3NhZ2U9RkFMU0V9DQoNCmFsdGVybmF0aXZlLnBhdHRlcm4gJT4lIA0KICB3cml0ZV9yZHMoImludGVyaW1fb3V0cHV0L3JlZ2V4X2FsdGVybmF0aXZlX3BhdHRlcm5faWRlbnRpZnlfY2hhcmFjdGVyc190cmFuc2NyaXB0cy5SRFMiKQ0KDQpgYGANCg0KDQojIyBBcHBseSBwYXR0ZXJuIHRvIG9idGFpbiBjaGFyYWN0ZXJzDQoNCioqIE1haW4gcGF0dGVybioqDQpgYGB7ciBldmFsPVRSVUUsIHdhcm5pbmc9RkFMU0UsIG1lc3NhZ2U9RkFMU0V9DQoNCmNoYXJhY3RlcnMudHJhbnNjcmlwdHMgPC0gZXBpc29kZS5saXN0LmRmJHRyYW5zY3JpcHQgJT4lDQpzdHJfZXh0cmFjdF9hbGwocGF0dGVybiA9IHBhdHRlcm4uY2hhcmFjdGVyLm5hbWVzKSAlPiUNCnVubGlzdCAlPiUgc3RyX3JlcGxhY2VfYWxsKHBhdHRlcm4gPSByZWJ1czo6b3IoIjoiLCAiXG4iLCAiXFwuIiwgDQoiXFwoIiAlUiUgcmVidXM6Om9uZV9vcl9tb3JlKCJbWzpwcmludDpdXSIpICVSJSAiXFwpIiksIHJlcGxhY2VtZW50ID0gIiIpICU+JSANCnVuaXF1ZSAlPiUgDQpzb3J0DQoNCnJtKHBhdHRlcm4uY2hhcmFjdGVyLm5hbWVzKQ0KDQpgYGANCg0KKipBbHRlcm5hdGl2ZSBwYXR0ZXJuKioNCmBgYHtyIGV2YWw9VFJVRSwgd2FybmluZz1GQUxTRSwgbWVzc2FnZT1GQUxTRX0NCg0KY2hhcmFjdGVycy50cmFuc2NyaXB0cy5hbHRlcm5hdGl2ZSA8LSBlcGlzb2RlLmxpc3QuZGYkdHJhbnNjcmlwdCAlPiUNCnN0cl9leHRyYWN0X2FsbChwYXR0ZXJuID0gYWx0ZXJuYXRpdmUucGF0dGVybikgJT4lDQp1bmxpc3QgJT4lIHN0cl9yZXBsYWNlX2FsbChwYXR0ZXJuID0gcmVidXM6Om9yKCI6IiwgIlxuIiwgIlxcLiIsICJcXD8iLCANCiJcXCgiICVSJSByZWJ1czo6b25lX29yX21vcmUoIltbOnByaW50Ol1dIikgJVIlICJcXCkiKSwgcmVwbGFjZW1lbnQgPSAiIikgJT4lIA0KdW5pcXVlICU+JSANCnNvcnQNCg0Kcm0oYWx0ZXJuYXRpdmUucGF0dGVybikNCg0KYGBgDQoNCiMjIENoYXJhY3RlcnMgdG8gdXBwZXINClRoaXMgaXMgbm90IHRoZSBmaW5hbCBsaXN0LiBDaGFyYWN0ZXJzIGhhdmUgdG8gYmUgY2xlYW5lZCBpbiBmdXJ0aGVyIHNjcmlwdHMuDQpgYGB7ciBldmFsPVRSVUUsIHdhcm5pbmc9RkFMU0UsIG1lc3NhZ2U9RkFMU0V9DQoNCmNoYXJhY3RlcnMudHJhbnNjcmlwdHMgJTw+JQ0KdG91cHBlcigpICU+JSANCnN0cl90cmltKHNpZGUgPSAicmlnaHQiKSAlPiUNCnVuaXF1ZQ0KDQpjaGFyYWN0ZXJzLnRyYW5zY3JpcHRzDQoNCmBgYA0KDQojIyBFeHBvcnQgbWF0Y2hlZCBjaGFyYWN0ZXJzDQoNCmBgYHtyIGV2YWw9VFJVRSwgd2FybmluZz1GQUxTRSwgbWVzc2FnZT1GQUxTRX0NCg0KY2hhcmFjdGVycy50cmFuc2NyaXB0cyAlPiUNCiAgd3JpdGVfcmRzKCJpbnRlcmltX291dHB1dC9jaGFyYWN0ZXJzX21hdGNoZWRfdHJhbnNjcmlwdHMuUkRTIikNCg0KYGBgDQoNCg0K</div>
 
 
 

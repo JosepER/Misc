@@ -3,83 +3,101 @@
 
 ## Start session ----
 
+rm(list = ls())
+
 library(stringr)
 library(rebus)
 library(magrittr)
 library(tidyverse)
 
+## Load patterns from previous script ---- 
 
-##Spot character names in transcripts
-  ###Transcriptions use names both in upper and lower case! 
-  ### e.g. 
-  ###* https://genius.com/Game-of-thrones-winter-is-coming-annotated
-  ###* https://genius.com/Game-of-thrones-the-kingsroad-annotated
+pattern.character.names  <- read_rds("interim_output/regex_pattern_identify_characters_transcripts.RDS")
 
-#Ideally, the pattern used should also be able to capture all names in characters scraped from wikipedia (i.e. object: characters.all).
-
-#There are some transcripts that use \ n pattern, others that don't
-
-#There are patterns of 'NAME (in valerian)' e.g:
-#'CERSEI (sighs): Thank you so much for your kind words'.
-
-#Names can have one or multiple words.
-
-## TO DO: names can be preceeded by an interrogation mark in previous line. 
+alternative.pattern <- read_rds("interim_output/regex_alternative_pattern_identify_characters_transcripts.RDS")
 
 
-pattern.character.names <- rebus::or("\\.[[:alpha:]]+" %R% rebus::one_or_more(" [[:alpha:]]+") %R% ":",
-"\n[[:alpha:]]+" %R% rebus::one_or_more(" [[:alpha:]]+") %R% ":",
-"\n[[:alpha:]]+" %R% rebus::zero_or_more(" [[:alpha:]]+") %R% " \\(" %R% rebus::one_or_more(rebus::or("[[:alpha:]]","\\s")) %R% "\\):",
-"\\.[[:alpha:]]+" %R% rebus::zero_or_more(" [[:alpha:]]+") %R% " \\(" %R% rebus::one_or_more(rebus::or("[[:alpha:]]","\\s")) %R% "\\):")
+## Load episode list
 
-
-
-#Manually explore matched characters
-
-episode.list.df %>% select(transcript) %>% filter(!is.na(transcript)) %>% purrr::transpose() %>%
-map(function(x){str_view_all(x, pattern.character.names)})
-
-
-
-#To do: Maybe use another script for this
-
-str_view_all(episode.list.df$transcript[2], pattern.character.names)
-
-
-characters.transcripts <- episode.list.df$transcript %>%
-str_extract_all(pattern = pattern.character.names) %>%
-unlist %>% str_replace_all(pattern = rebus::or(":", "\n", "\\.", 
-"\\(" %R% rebus::one_or_more("[[:print:]]") %R% "\\)"), replacement = "") %>% 
-unique %>% 
-sort
-
-rm(pattern.character.names)
-
-
-#New:: Alternative pattern 
-#this has to be changed to any character, including "-"
-
-alternative.pattern <- rebus::or("\\.", "\\?") %R% "[[:alpha:]]+" %R% rebus::one_or_more(" [[:alpha:]]+") %R% ":"
-
-
-characters.transcripts.alternative <- episode.list.df$transcript %>%
-str_extract_all(pattern = alternative.pattern) %>%
-unlist %>% str_replace_all(pattern = rebus::or(":", "\n", "\\.", "\\?", 
-"\\(" %R% rebus::one_or_more("[[:print:]]") %R% "\\)"), replacement = "") %>% 
-unique %>% 
-sort
-
-
-#All characters in transcripts to upper. This is not the final list and should be further cleaned! 
-
-characters.transcripts %<>%
-toupper() %>% 
-str_trim(side = "right") %>%
-unique
-
-characters.transcripts
-
-
+episode.list.df <- read_rds("interim_output/episode_list_transcripts.RDS")
 
 
 #TO DO: use str_View to manually check matches in transcripst
+
+if(!"transcripts_matched" %in% list.files("interim_output/")){
+
+  dir.create("interim_output/transcripts_matched")
+  
+}
+    
+#try with purrr
+  
+
+
+  episode.list.df[1:5,] %>% 
+  filter(!is.na(transcript)) %>% 
+  mutate(id_episode = str_c(season, "episode" , episode_number, sep = "_"))  %>% 
+  select(id_episode, transcript) %>%
+  purrr::transpose() %>%
+purrr:::map(function(x) {  
+  
+  temp.obj <- str_view_all(x$transcript, pattern.character.names) 
+  
+  sink(str_c("interim_output/transcripts_matched/", x$id_episode, "V4.html") )
+
+  print(temp.obj)
+  
+  sink()
+  close()
+  
+  }) 
+
+# try with loop
+
+  obj. <- list()
+  
+for(i in 1:nrow(episode.list.df[1:5,])){
+  
+  if(!is.na(episode.list.df[i,"transcript"])){
+    
+    next()
+    
+  }
+  
+  
+  obj.[[i]] <- str_view_all(episode.list.df[i,"transcript"], pattern.character.names) 
+  
+}  
+  
+  
+  
+  str_view_all(episode.list.df[1,"transcript"], pattern.character.names) 
+  
+  str_view_all(episode.list.df[2,"transcript"], pattern.character.names) 
+  
+  
+  episode.list.df %<>%
+    filter(!is.na(transcript))
+  
+  obj. <- list()
+  
+  for(e in 1:10){
+    
+    if(is.na(episode.list.df[["transcript"]][e])){
+      
+      next()
+      
+    }
+    
+    obj.[[e]] <-  str_view_all(episode.list.df[e,"transcript"], pattern.character.names) 
+    
+    file. <- file(str_c("interim_output/transcripts_matched/", e, "V7.html") )
+    
+    sink(file. )
+    
+    print(obj.[[e]], type="html")  
+    
+    sink()
+    close(file.)
+    
+    }

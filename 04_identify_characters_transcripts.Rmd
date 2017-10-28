@@ -5,8 +5,11 @@ editor_options:
   chunk_output_type: inline
 ---
 
+# Prepare session
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+rm(list = ls())
 
 library(stringr)
 library(rebus)
@@ -15,24 +18,34 @@ library(tidyverse)
 
 ```
 
+# Import data from previous scripts 
 
-##Spot character names in transcripts
-  ###Transcriptions use names both in upper and lower case! 
-  ### e.g. 
-  ###* https://genius.com/Game-of-thrones-winter-is-coming-annotated
-  ###* https://genius.com/Game-of-thrones-the-kingsroad-annotated
+```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-#Ideally, the pattern used should also be able to capture all names in characters scraped from wikipedia (i.e. object: characters.all).
+episode.list.df <- read_rds("interim_output/episode_list_transcripts.RDS")
 
-#There are some transcripts that use \ n pattern, others that don't
+```
 
-#There are patterns of 'NAME (in valerian)' e.g:
-#'CERSEI (sighs): Thank you so much for your kind words'.
 
-#Names can have one or multiple words.
+#Spot character names in transcripts
+Transcriptions use names both in upper and lower case! 
+e.g. 
+* https://genius.com/Game-of-thrones-winter-is-coming-annotated
+* https://genius.com/Game-of-thrones-the-kingsroad-annotated
 
-## TO DO: names can be preceeded by an interrogation mark in previous line. 
+Ideally, the pattern used should also be able to capture all names in characters scraped from wikipedia (i.e. object: characters.all).
 
+There are some transcripts that use \ n pattern, others that don't
+
+There are patterns of 'NAME (in valerian)' e.g:
+'CERSEI (sighs): Thank you so much for your kind words'.
+
+Names can have one or multiple words.
+
+**TO DO: names can be preceeded by an interrogation mark in previous line. **
+TO DO: this has to be changed to any character, including "-"
+
+## Pattern to detect and extract character names 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 pattern.character.names <- rebus::or("\\.[[:alpha:]]+" %R% rebus::one_or_more(" [[:alpha:]]+") %R% ":",
@@ -42,23 +55,36 @@ pattern.character.names <- rebus::or("\\.[[:alpha:]]+" %R% rebus::one_or_more(" 
 
 ```
 
-#Manually explore matched characters
-TO DO: This has to be exported to script 05
-```{r eval=FALSE, warning=FALSE, message=FALSE}
+**Export pattern to next script**
+```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-episode.list.df %>% select(transcript) %>% filter(!is.na(transcript)) %>% purrr::transpose() %>%
-map(function(x){str_view_all(x, pattern.character.names)})
+pattern.character.names %>% 
+  write_rds("interim_output/regex_pattern_identify_characters_transcripts.RDS")
 
 ```
 
-#To do: Maybe use another script for this
+
+## Alternative pattern (space to check alternative patterns)
+TO DO: this has to be changed to any character, including "-"
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-str_view_all(episode.list.df$transcript[2], pattern.character.names)
+alternative.pattern <- rebus::or("\\.", "\\?") %R% "[[:alpha:]]+" %R% rebus::one_or_more(" [[:alpha:]]+") %R% ":"
 
 ```
 
+**Export alternative pattern to next script**
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+alternative.pattern %>% 
+  write_rds("interim_output/regex_alternative_pattern_identify_characters_transcripts.RDS")
+
+```
+
+
+## Apply pattern to obtain characters
+
+** Main pattern**
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 characters.transcripts <- episode.list.df$transcript %>%
@@ -72,13 +98,8 @@ rm(pattern.character.names)
 
 ```
 
-#New:: Alternative pattern 
-this has to be changed to any character, including "-"
-
+**Alternative pattern**
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-alternative.pattern <- rebus::or("\\.", "\\?") %R% "[[:alpha:]]+" %R% rebus::one_or_more(" [[:alpha:]]+") %R% ":"
-
 
 characters.transcripts.alternative <- episode.list.df$transcript %>%
 str_extract_all(pattern = alternative.pattern) %>%
@@ -87,10 +108,12 @@ unlist %>% str_replace_all(pattern = rebus::or(":", "\n", "\\.", "\\?",
 unique %>% 
 sort
 
+rm(alternative.pattern)
+
 ```
 
-#All characters in transcripts to upper. This is not the final list and should be further cleaned! 
-
+## Characters to upper
+This is not the final list. Characters have to be cleaned in further scripts.
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 characters.transcripts %<>%
@@ -101,3 +124,14 @@ unique
 characters.transcripts
 
 ```
+
+## Export matched characters
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts %>%
+  write_rds("interim_output/characters_matched_transcripts.RDS")
+
+```
+
+
