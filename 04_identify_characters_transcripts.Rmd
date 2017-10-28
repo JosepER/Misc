@@ -69,9 +69,12 @@ TO DO: this has to be changed to any character, including "-"
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-alternative.pattern <- rebus::or("\\.", "\\?") %R% "[[:alpha:]]+" %R% rebus::one_or_more(" [[:alpha:]]+") %R% ":"
+alternative.pattern <- rebus::or( rebus::or("[[:punct:]]","\\s","\n") %R% "[[:alpha:]]+" %R% rebus::one_or_more(" [[:alpha:]]+") %R% ":",
+           rebus::or("[[:punct:]]","\\s","\n") %R% "[[:alpha:]]+" %R% rebus::zero_or_more(" [[:alpha:]]+") %R% " \\(" %R% rebus::one_or_more(rebus::or("[[:alpha:]]","\\s")) %R% "\\):")
 
 ```
+
+
 
 **Export alternative pattern to next script**
 ```{r eval=TRUE, warning=FALSE, message=FALSE}

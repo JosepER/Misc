@@ -30,58 +30,11 @@ if(!"transcripts_matched" %in% list.files("interim_output/")){
   
 }
     
-#try with purrr
-  
-
-
-  episode.list.df[1:5,] %>% 
-  filter(!is.na(transcript)) %>% 
-  mutate(id_episode = str_c(season, "episode" , episode_number, sep = "_"))  %>% 
-  select(id_episode, transcript) %>%
-  purrr::transpose() %>%
-purrr:::map(function(x) {  
-  
-  temp.obj <- str_view_all(x$transcript, pattern.character.names) 
-  
-  sink(str_c("interim_output/transcripts_matched/", x$id_episode, "V4.html") )
-
-  print(temp.obj)
-  
-  sink()
-  close()
-  
-  }) 
-
 # try with loop
 
   obj. <- list()
   
-for(i in 1:nrow(episode.list.df[1:5,])){
-  
-  if(!is.na(episode.list.df[i,"transcript"])){
-    
-    next()
-    
-  }
-  
-  
-  obj.[[i]] <- str_view_all(episode.list.df[i,"transcript"], pattern.character.names) 
-  
-}  
-  
-  
-  
-  str_view_all(episode.list.df[1,"transcript"], pattern.character.names) 
-  
-  str_view_all(episode.list.df[2,"transcript"], pattern.character.names) 
-  
-  
-  episode.list.df %<>%
-    filter(!is.na(transcript))
-  
-  obj. <- list()
-  
-  for(e in 1:10){
+  for(e in 6:10){
     
     if(is.na(episode.list.df[["transcript"]][e])){
       
@@ -89,9 +42,9 @@ for(i in 1:nrow(episode.list.df[1:5,])){
       
     }
     
-    obj.[[e]] <-  str_view_all(episode.list.df[e,"transcript"], pattern.character.names) 
+    obj.[[e]] <-  str_view_all(episode.list.df[e,"transcript"], alternative.pattern) 
     
-    file. <- file(str_c("interim_output/transcripts_matched/", e, "V7.html") )
+    file. <- file(str_c("interim_output/transcripts_matched/", e, ".html") )
     
     sink(file. )
     
