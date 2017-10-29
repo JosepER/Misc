@@ -25,12 +25,6 @@ library(tidyverse)
 ```
 
 
-#Import data from previous scripts
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-
-```
-
 #Scrap list of GoT episodes
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 

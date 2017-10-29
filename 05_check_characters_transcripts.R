@@ -1,5 +1,6 @@
 #Identify characters in transcripts
 
+#TO DO: MAKE SURE EXPORTS ARE IN PROPER FORMAT
 
 ## Start session ----
 
@@ -14,7 +15,7 @@ library(tidyverse)
 
 pattern.character.names  <- read_rds("interim_output/regex_pattern_identify_characters_transcripts.RDS")
 
-alternative.pattern <- read_rds("interim_output/regex_alternative_pattern_identify_characters_transcripts.RDS")
+    #alternative.pattern <- read_rds("interim_output/regex_alternative_pattern_identify_characters_transcripts.RDS")
 
 
 ## Load episode list
@@ -32,9 +33,11 @@ if(!"transcripts_matched" %in% list.files("interim_output/")){
     
 # try with loop
 
+  range.to.plot <- 1:5
+
   obj. <- list()
   
-  for(e in 6:10){
+  for(e in range.to.plot){
     
     if(is.na(episode.list.df[["transcript"]][e])){
       
@@ -42,7 +45,7 @@ if(!"transcripts_matched" %in% list.files("interim_output/")){
       
     }
     
-    obj.[[e]] <-  str_view_all(episode.list.df[e,"transcript"], alternative.pattern) 
+    obj.[[e]] <-  str_view_all(episode.list.df[e,"transcript"], pattern.character.names) 
     
     file. <- file(str_c("interim_output/transcripts_matched/", e, ".html") )
     
@@ -53,4 +56,14 @@ if(!"transcripts_matched" %in% list.files("interim_output/")){
     sink()
     close(file.)
     
-    }
+  }
+  
+# Detect characters
+  
+episode.list.df %>%
+  select(transcript) %>%
+  purrr::transpose() %>%
+  unlist %>%
+  str_which( rebus::or("Ebrose", "EBROSE") )
+  
+  

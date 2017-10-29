@@ -5,13 +5,74 @@ editor_options:
   chunk_output_type: inline
 ---
 
+```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-characters.dead <- readRDS()
+rm(list = ls())
 
-characters.all <- readRDS("interim_output/characters.all.02.RDS")
+library(stringr)
+library(rebus)
+library(magrittr)
+library(tidyverse)
 
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+episode.list.df <-  read_rds("interim_output/episode_list_transcripts.RDS")
+
+characters.dead <- read_rds("interim_output/characters.death.long.02.RDS")
+
+characters.all <- read_rds("interim_output/characters.all.02.RDS")
+
+characters.transcripts <- read_rds("interim_output/characters_matched_transcripts.RDS")
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts %<>%
+  str_replace_all("[[:punct:]]", "") %>%
+  str_trim("both") %>% 
+  unique
+
+characters.transcripts %>% sort()
+
+```
 
 # Clean names in transcritpts
+
+## Check names which are very long
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts %>% 
+  str_count('\\w+') %>%
+  table()
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+index.long <- characters.transcripts %>% 
+  str_count('\\w+') > 3
+
+index.long %<>% 
+  which()
+
+index.hugh <- characters.transcripts %>%
+  str_which("HUGH OF THE VALE")
+
+index.long <- index.long[!index.long %in% index.hugh]
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts <- characters.transcripts[-index.long]
+
+rm(index.hugh, index.long)
+
+```
+
 
 ## Do a quick clean of characters in transcripts
 
@@ -24,6 +85,9 @@ Careful with:
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
+prefix.patterns <- rebus::or("LORD ", "MAESTER ", "^SER ", "YOUNG ",
+                             "LADY ")
+
 characters.transcripts %>%
   str_subset(pattern = rebus::or("LORD ", "MAESTER ",
                                  "SER ", "YOUNG ", #careful when removing SER!
@@ -31,6 +95,27 @@ characters.transcripts %>%
                                  "GRAND")) %>%
   sort
   
+```
+
+We need to create a new column with cleaned names. In the end we will have to match the same pattern as used before.
+
+
+**TO DO: add cleaned patterns in a new column**
+Check wikipedia characters
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.all %>% 
+  toupper() %>%
+  str_subset(pattern = prefix.patterns)
+
+```
+
+Where is Ebrose in scrapped characters
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts %>% 
+  str_which("EBROSE")
+
 ```
 
 We will skip those rows when when removing the patterns.
@@ -42,6 +127,8 @@ error.sources.pattern. <- rebus::or("LADY CRANE", "ARCHMAESTER",
                                     "LORD OF BONES", "LORD KARSTARK",
                                     "YOUNG LYANNA", "LORD MORMONT")
 
+characters.transcripts.cleaned <- characters.transcripts
+
 for(i in seq_along(characters.transcripts)){
   
   name. <- characters.transcripts[i]
@@ -52,24 +139,26 @@ for(i in seq_along(characters.transcripts)){
   
   }else{
       
-    characters.transcripts[i] %<>%
-      str_replace_all(pattern = rebus::or("LORD ", "MAESTER ",
-                                                         "^SER ", "YOUNG ",
-                                                         "LADY ", "LADYC "),
+    characters.transcripts.cleaned[i] <-  name. %>%
+      str_replace_all(pattern = prefix.patterns,
                                      replacement = "")
     }
   
 }
 
-characters.transcripts %<>% 
-  sort 
-
-characters.transcripts
-
 rm(name., error.sources.pattern., i)
 
 ```
 
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df <- data_frame(characters.transcripts.original = characters.transcripts,
+                                        characters.transcripts.cleaned = characters.transcripts.cleaned) %>%
+  arrange(characters.transcripts.original)
+
+rm(characters.transcripts)
+
+```
 
 Delete objects which are obviously not characters
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
@@ -102,34 +191,49 @@ delete.non.characters <- c("A VOICE", "ALL", "ALL THREE", "ALL TOGETHER",
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-characters.transcripts <- characters.transcripts[!characters.transcripts %in% delete.non.characters]
-
-rm(delete.non.characters)
+characters.transcripts.df %<>%
+  filter(!characters.transcripts.original %in% delete.non.characters)
 
 ```
+
+Carefully delete also those that have these patterns typical of non-characters
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+delete.non.characters.names <- characters.transcripts.df$characters.transcripts.original%>% str_subset(pattern = rebus::or1(delete.non.characters))
+
+delete.non.characters.index <- characters.transcripts.df$characters.transcripts.cleaned %>% str_which(pattern = rebus::or1(delete.non.characters))
+
+not.to.delete <- rebus::or("ALLIS", "MANCE", "MANDERLY", "SMALLJON","ROBETT GLOVER", "TALLA", "TOMMEN")
+  
+delete.non.characters.patterns.df <- data_frame(delete.non.characters.names, delete.non.characters.index) %>% arrange(delete.non.characters.names) 
+
+delete.non.characters.patterns.df %<>%
+  filter(!delete.non.characters.names %>% str_detect(not.to.delete))
+
+delete.non.characters.patterns.df
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df %<>%
+  filter(!characters.transcripts.original %in% delete.non.characters.patterns.df$delete.non.characters.names)
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+rm(delete.non.characters, delete.non.characters.index, delete.non.characters.names,
+   delete.non.characters.patterns.df)
+
+```
+
 
 **Create a data frame that maps the original names that appear in the transcripts with their cleaned version**
 Orignal names contain spelling mistakes or different versions of the name than those in the scrapped wikipedia list.
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-characters.transcripts.df <- data_frame(characters.transcripts.original = characters.transcripts,
-                                        characters.transcripts.cleaned = characters.transcripts)
 
 
-
-rm(characters.transcripts)
-
-```
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-characters.transcripts.df$characters.transcripts.cleaned %>%
-  str_subset(pattern = "AERSON")
-
-```
-
-
-**Create table with replacements**
+**Create table with manual replacements**
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
@@ -206,8 +310,6 @@ rm(original., replacement.)
 ```
 
 Check that all original. words are in original transcripts.
-
-**TO DO: Did I not capture 'Eyed raven' this time?**
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 for(i in 1:nrow(replacements)){
@@ -219,9 +321,88 @@ for(i in 1:nrow(replacements)){
   
 }
 
-rm(replacements, i)
+rm(i)
 
 ```
+
+
+Replace characters from manual replacement patterns
+
+**TO DO: AUTOMATISE NUMBER OF SPLITS AT THE END OF THIS CHUNCK:**
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+replacements$match <- NA
+
+for (i in 1:nrow(replacements)){
+  
+  pattern. <- replacements$original[i]
+  
+  replacements$match[i] <- characters.transcripts.df$characters.transcripts.cleaned %>%
+    str_subset(pattern = rebus::exactly(pattern.)) %>%
+    str_c(collapse = "/")
+  
+}
+
+replacements$match %>%
+  str_cound("/")
+
+replacements %<>%
+  separate(col = match, 
+           into = c("first_replaced", "second_replaced"),
+           sep = "/")
+
+```
+
+Chunck to visualise all manual replacements
+```{r eval=FALSE, warning=FALSE, message=FALSE}
+
+replacements
+
+```
+
+Replace manually 
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+replacements %>%
+  select(replacement, first_replaced, second_replaced)
+
+```
+
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df %>%
+  mutate(matched.replacement = characters.transcripts.cleaned %>% stringr::str_extract(pattern = rebus::or1(rebus::exactly(replacements$original) )))
+
+
+
+
+%>%
+  left_join(replacements, by = c("matched.replacement" = "original"))
+
+
+
+
+```
+
+
+
+
+
+
+
+
+#rm(replacements, i)
+
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df$characters.transcripts.cleaned %>%
+  str_detect(replacements$original) 
+
+```
+
 
 
 Clean characters from transcripts

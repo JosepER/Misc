@@ -48,10 +48,8 @@ TO DO: this has to be changed to any character, including "-"
 ## Pattern to detect and extract character names 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-pattern.character.names <- rebus::or("\\.[[:alpha:]]+" %R% rebus::one_or_more(" [[:alpha:]]+") %R% ":",
-"\n[[:alpha:]]+" %R% rebus::one_or_more(" [[:alpha:]]+") %R% ":",
-"\n[[:alpha:]]+" %R% rebus::zero_or_more(" [[:alpha:]]+") %R% " \\(" %R% rebus::one_or_more(rebus::or("[[:alpha:]]","\\s")) %R% "\\):",
-"\\.[[:alpha:]]+" %R% rebus::zero_or_more(" [[:alpha:]]+") %R% " \\(" %R% rebus::one_or_more(rebus::or("[[:alpha:]]","\\s")) %R% "\\):")
+pattern.character.names <- rebus::or( rebus::or("[[:punct:]]","\\s","\n") %R% "[[:alpha:]]+" %R% rebus::one_or_more(" [[:alpha:]]+") %R% ":",
+           rebus::or("[[:punct:]]","\\s","\n") %R% "[[:alpha:]]+" %R% rebus::zero_or_more(" [[:alpha:]]+") %R% " \\(" %R% rebus::one_or_more(rebus::or("[[:alpha:]]","\\s")) %R% "\\):")
 
 ```
 
@@ -63,26 +61,8 @@ pattern.character.names %>%
 
 ```
 
-
-## Alternative pattern (space to check alternative patterns)
 TO DO: this has to be changed to any character, including "-"
 
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-alternative.pattern <- rebus::or( rebus::or("[[:punct:]]","\\s","\n") %R% "[[:alpha:]]+" %R% rebus::one_or_more(" [[:alpha:]]+") %R% ":",
-           rebus::or("[[:punct:]]","\\s","\n") %R% "[[:alpha:]]+" %R% rebus::zero_or_more(" [[:alpha:]]+") %R% " \\(" %R% rebus::one_or_more(rebus::or("[[:alpha:]]","\\s")) %R% "\\):")
-
-```
-
-
-
-**Export alternative pattern to next script**
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-alternative.pattern %>% 
-  write_rds("interim_output/regex_alternative_pattern_identify_characters_transcripts.RDS")
-
-```
 
 
 ## Apply pattern to obtain characters
@@ -101,22 +81,16 @@ rm(pattern.character.names)
 
 ```
 
-**Alternative pattern**
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-characters.transcripts.alternative <- episode.list.df$transcript %>%
-str_extract_all(pattern = alternative.pattern) %>%
-unlist %>% str_replace_all(pattern = rebus::or(":", "\n", "\\.", "\\?", 
-"\\(" %R% rebus::one_or_more("[[:print:]]") %R% "\\)"), replacement = "") %>% 
-unique %>% 
-sort
-
-rm(alternative.pattern)
-
-```
 
 ## Characters to upper
 This is not the final list. Characters have to be cleaned in further scripts.
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts %>%
+  unique()
+
+```
+
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 characters.transcripts %<>%
