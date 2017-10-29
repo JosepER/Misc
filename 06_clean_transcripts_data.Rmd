@@ -280,7 +280,7 @@ replacement. <- c("ALLISER THORNE",
                   "DAENERYS",
                   toupper("Daario Naharis"),
                   "EDDISON TOLLETT",
-                  "EDDARD",
+                  "EDDARD STARK",
                   "ELLARIA SAND",
                   "THREE-EYED RAVEN",
                   "GREY WORM",
@@ -327,9 +327,6 @@ rm(i)
 
 
 Replace characters from manual replacement patterns
-
-**TO DO: AUTOMATISE NUMBER OF SPLITS AT THE END OF THIS CHUNCK:**
-
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 replacements$match <- NA
@@ -344,13 +341,21 @@ for (i in 1:nrow(replacements)){
   
 }
 
-replacements$match %>%
-  str_cound("/")
+max.number.matches <- replacements$match %>%
+  str_count("/") %>% max()+1
+
+into.vars. <- str_c(LETTERS[1:max.number.matches], "_replaced")
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 replacements %<>%
   separate(col = match, 
-           into = c("first_replaced", "second_replaced"),
+           into = into.vars.,
            sep = "/")
+
+rm(pattern., max.number.matches, into.vars., i, prefix.patterns)
 
 ```
 
@@ -364,56 +369,30 @@ replacements
 Replace manually 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-replacements %>%
-  select(replacement, first_replaced, second_replaced)
+replacements %<>%
+  select(-original) %>%
+  gather(key = "key", value = "replaced", -replacement) %>%
+  select(replaced, replacement) %>%
+  filter(!is.na(replaced)) %>%
+  unique %>%
+  arrange(replaced)
 
 ```
 
-
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-characters.transcripts.df %>%
-  mutate(matched.replacement = characters.transcripts.cleaned %>% stringr::str_extract(pattern = rebus::or1(rebus::exactly(replacements$original) )))
-
-
-
-
-%>%
-  left_join(replacements, by = c("matched.replacement" = "original"))
-
-
-
-
-```
-
-
-
-
-
-
-
-
-#rm(replacements, i)
-
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-characters.transcripts.df$characters.transcripts.cleaned %>%
-  str_detect(replacements$original) 
-
-```
-
-
-
-Clean characters from transcripts
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-characters.transcripts.df %>%
-  mutate(characters.transcripts.cleaned = characters.transcripts.cleaned %>%
-           str_replace(pattern = "AERSON", replacement = "AERON"))
 
 characters.transcripts.df %<>%
-  unique()
+  left_join(replacements, by = c("characters.transcripts.cleaned" = "replaced")) %>%
+  mutate(characters.transcripts.cleaned = if_else(!is.na(replacement),
+                                                  true = replacement,
+                                                  false = characters.transcripts.cleaned)) %>%
+  select(-replacement)
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+rm(replacements, i, not.to.delete)
 
 ```
 
