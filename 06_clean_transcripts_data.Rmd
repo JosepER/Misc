@@ -183,7 +183,11 @@ delete.non.characters <- c("A VOICE", "ALL", "ALL THREE", "ALL TOGETHER",
   "TELL ME SOMETHING", "THE GROUP", "THE OTHERS AT THE TABLE", 
   "THEON COVERS THE MAP WITH PAWNSGREATJON UMBER", "THIN MAN", "TOGETHER",
   "TRIBESMEN OF THE VALE", "VOICES OUTSIDE", "WAITRESS", "WATCHMAN",
-  "WILDLING", "WILDLING ELDER", "WINE MERCHANT", "WOMAN", "MAN") %>%
+  "WILDLING", "WILDLING ELDER", "WINE MERCHANT", "WOMAN", "MAN", 
+  "EVERYBODY", "FAIR TRIAL", "FIRST LESSON", "I BEG YOU", "OF HOUSE FREY",
+  "PIG FARMER", "SHOUTING", "THE TRUTH NOW", "WE ASK AGAIN", "WHO WILL TRIUMPH",
+  "M WRONG", "S LANDING BAKER", "S LANDING PAGE", "S TOWN WHORE",
+  "S WATCH", "S WATCHERS", "STREET URCHIN", "AND GRENN") %>%
   str_trim(side = "right") %>%
   unique()
 
@@ -241,7 +245,7 @@ original. <- c(rebus::or("ALLITHORNE", "ALLITHRONE", "ALLISTER"),
                rebus::or("BAELISH", "LITTLEFINGER"),
                "BLACK WALDER",
                "BLACKFISH",
-               "BRAND",
+               rebus::or("BRAND", "BRANN"),
                "BRIENNE",
                "CASSEL",
                rebus::or("DAERNEYS", "DANERYS"),
@@ -268,7 +272,11 @@ original. <- c(rebus::or("ALLITHORNE", "ALLITHRONE", "ALLISTER"),
                "LORD KARSTARK",
                "YOUNG LYANNA",
                "LADYC RANE",
-               "LORD MORMONT")
+               "LORD MORMONT",
+               "COUNTRYSIDEBRONN",
+               "S ARYASANSA STARK",
+               "S ROOMAEMON",
+               rebus::or("GRAND PYCELLE", "GRAND PYRCELLE") )
 
 replacement. <- c("ALLISER THORNE",
                   "PETYR BAELISH",
@@ -301,7 +309,11 @@ replacement. <- c("ALLISER THORNE",
                   "RICKARD KARSTARK",
                   "LYANNA STARK",
                   "LADY CRANE",
-                  "JEOR MORMONT")
+                  "JEOR MORMONT",
+                  "BRONN",
+                  "SANSA STARK",
+                  "AEMON",
+                  "PYCELLE")
 
 replacements <- data_frame(original = original., replacement = replacement.)
 
@@ -397,16 +409,23 @@ rm(replacements, i, not.to.delete)
 ```
 
 
+```{r eval=FALSE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df
+  
+```
 
 
-# Match characters in transcripts to all names in previous scripts
+# Match characters in transcripts to all names scrapped from wikipedia in previous scripts
 
 ## Create numeric identifiers for  character names which appeared in previous scripts
 
 Create a data frame with wikipedia/all character names with an identifier
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-characters.all.map.df <- data_frame(character.names.wikipedia = characters.all %>% toupper() %>% sort(),
+characters.all.map.df <- data_frame(character.names.wikipedia = characters.all %>% 
+                                      toupper() %>% 
+                                      sort(),
            identifier = 1:length(characters.all))
 
 characters.all.map.df %>%
@@ -418,12 +437,20 @@ rm(characters.all)
 
 ## Try to match exact 
 
-Percentage of cases matching
+Percentage of cases from wikipedia matching those in transcripts
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 (characters.all.map.df$character.names.wikipedia %in% characters.transcripts.df$characters.transcripts.cleaned) %>% sum()/nrow(characters.all.map.df)
 
 ```
+
+Percentage of cases from transcripts matching those in wikipedia
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+(unique(characters.transcripts.df$characters.transcripts.cleaned) %in% characters.all.map.df$character.names.wikipedia) %>% sum()/length(unique(characters.transcripts.df$characters.transcripts.cleaned))
+  
+```
+
 
 Matched cases
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
@@ -510,6 +537,9 @@ characters.transcripts.df
 
 ```
 
+
+TO DO: C
+Careful with 138 for 'Lord' pattern. I don't think it's the same as the LORD OF BONES.
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 characters.transcripts.df %<>%
@@ -519,9 +549,11 @@ characters.transcripts.df %<>%
          )) %>%
   select(-identifier_fullname, -identifier_firstname)
 
-characters.transcripts.df
+characters.transcripts.df %>%
+  arrange(identifier)
 
 ```
+
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
@@ -533,12 +565,12 @@ characters.transcripts.df %$% identifier %>% is.na() %>% sum()
 
 characters.transcripts.df %>%
   filter(is.na(identifier)) %>%
-  write_csv("interim_output/characters_manually_match.csv")
+  write_csv("interim_output/characters_manually_matchv2.csv")
 
 ```
 
 ## Check where unmatched/ambiguous characters appear
-```{r eval=TRUE, echo = FALSE, warning=FALSE, message=FALSE}
+```{r eval=FALSE, echo = FALSE, warning=FALSE, message=FALSE}
 
 episode.list.df$transcript %>%
   map_lgl(function(x){str_detect(x, rebus::or("Arryn: ","ARRYN: ") )}) %>% 
@@ -583,7 +615,7 @@ episode.list.df$transcript %>%
 ```
 
 
-It looks like the mention to 'ROYCE' in the first episode refers to 'WAYMAR ROYCE' and those in episoded 38, 41, 54, 62 refer to 'YOHN ROYCE'. That's great.
+It looks like the mention to 'ROYCE' in the first episode refers to 'WAYMAR ROYCE' and those in episoded 38, 41, 54, 62 refer to 'YOHN ROYCE'. That's great! :D
 ```{r eval=TRUE, echo = FALSE, warning=FALSE, message=FALSE}
 
 episode.list.df$transcript %>%
@@ -610,13 +642,13 @@ episode.list.df$transcript %>%
 
 
 
-3825f45v5d
-
 ## Import back the transcript characters which were manually matched
+This was the first round of matched characters. **Important: their identifier might not correspond to the current identifiers and should be excludedd**
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 characters.manually.matched <- read_delim("interim_output/characters_manually_match_MOD.csv",
-                                        delim = ";")
+                                        delim = ";") %>%
+  select(-identifier)
 
 ```
 
@@ -642,12 +674,22 @@ added.characters <- characters.manually.matched %>%
          characters.all.firstname = NA_character_) %>%
   select(-new_name)
 
+str_c("added characters: ", str_c(added.characters$character.names.wikipedia, collapse = ", ") )
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+
 characters.all.map.df %<>%
   bind_rows(added.characters)
 
 rm(next.current.identifier, number.new.added)
 
 ```
+
+
+TO DO: REVIEW FROM HERE ONWARDS
 
 ### Characters to delete from transcripts
 These were spot as characters from transcripts but are not. They should be deleted.
@@ -657,8 +699,12 @@ deleted.characters <- characters.manually.matched %>%
   filter(comment == "delete") %>%
   select(characters.transcripts.cleaned)
 
+print(str_c("before deletion: ", nrow(characters.transcripts.df), " rows"))
+
 characters.transcripts.df %<>%
   anti_join(deleted.characters) 
+
+print(str_c("after deletion: ", nrow(characters.transcripts.df), " rows"))
 
 rm(deleted.characters)
 

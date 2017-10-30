@@ -33,7 +33,7 @@ if(!"transcripts_matched" %in% list.files("interim_output/")){
     
 # try with loop
 
-  range.to.plot <- 1:5
+  range.to.plot <- c(47)
 
   obj. <- list()
   
@@ -64,6 +64,6 @@ episode.list.df %>%
   select(transcript) %>%
   purrr::transpose() %>%
   unlist %>%
-  str_which( rebus::or("Ebrose", "EBROSE") )
+  str_which( rebus::or(stringr::regex(pattern = "ROOMAEMON", ignore_case = T)) )
   
   
