@@ -187,7 +187,7 @@ delete.non.characters <- c("A VOICE", "ALL", "ALL THREE", "ALL TOGETHER",
   "EVERYBODY", "FAIR TRIAL", "FIRST LESSON", "I BEG YOU", "OF HOUSE FREY",
   "PIG FARMER", "SHOUTING", "THE TRUTH NOW", "WE ASK AGAIN", "WHO WILL TRIUMPH",
   "M WRONG", "S LANDING BAKER", "S LANDING PAGE", "S TOWN WHORE",
-  "S WATCH", "S WATCHERS", "STREET URCHIN", "AND GRENN", "EXT WINTERFELL") %>%
+  "S WATCH", "S WATCHERS", "STREET URCHIN", "AND GRENN", "EXT WINTERFELL", "SEPTON") %>%
   str_trim(side = "right") %>%
   unique()
 
@@ -654,6 +654,15 @@ characters.manually.matched <- read_delim("interim_output/characters_manually_ma
 
 ### New characters to add to the wikipedia list
 These are characters that appeared in the transcripts but not in the wikipedia list. We should add them to the list scrapped from wikipedia (i.e. characters.all). 
+
+From second revision:
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+more.added.characters <- data_frame(new_name = c("COHOLLO", "RYGER RIVERS", "STEVRON FREY", toupper("Merry Frey") ))
+
+```
+
+From imported csv (first revision):
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 next.current.identifier <- characters.all.map.df$identifier %>%
@@ -663,11 +672,12 @@ number.new.added <- characters.manually.matched %>%
   filter(comment == "add as new character") %$%
   new_name %>%
   unique %>%
-  length()
+  length() + nrow(more.added.characters)
 
 added.characters <- characters.manually.matched %>%
   filter(comment == "add as new character") %>%
   select(new_name) %>%
+  bind_rows(more.added.characters) %>%
   unique %>%
   mutate(character.names.wikipedia = toupper(new_name),
          identifier = next.current.identifier:(next.current.identifier+number.new.added-1),
@@ -735,20 +745,9 @@ characters.transcripts.df %<>%
   
 ```
   
-  
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-  
-  mutate(identifier = if_else(!is.na(identifier),
-                              true = identifier,
-                              false = identifier_new),
-         characters.transcripts.cleaned = if_else(!is.na(characters.transcripts.cleaned_new),
-                                                  true = characters.transcripts.cleaned_new,
-                                                  false = characters.transcripts.cleaned)) %>% select(-characters.transcripts.cleaned_new, -identifier_new)
 
-characters.transcripts.df
 
-```
-
+Allocate identifiers to those characters that were manually cleaned. Use identifiers from all character's list.
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 characters.transcripts.df %<>%
@@ -761,7 +760,29 @@ characters.transcripts.df %<>%
 
 ```
 
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+#characters.all.map.df %>% View()
+
+```
+
+
 New ones to match
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df %<>%
+  left_join(data_frame(characters.transcripts.original = c("LORD ROYCE", "THRONEKHAL DROGO", "MERRY"),
+           identifier_new = as.integer(c(289, 118, 306)) ), by = "characters.transcripts.original") %>% 
+  mutate(identifier = if_else(is.na(identifier),
+                              true = identifier_new,
+                              false = identifier)) %>%
+  select(-identifier_new)
+
+```
+
+
+
+
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 characters.transcripts.df %>%
@@ -770,6 +791,16 @@ characters.transcripts.df %>%
 ```
 
 
+
+Chollo needs to be added 
+Lord Royce is Yohn Royce
+MERRY is Merry Frey
+RYGER RIVERS needs to be added 
+SEPTON should be deleted
+STEVRON FREY should be added
+THRONEKHAL DROGO is KHAL DROGO
+
+Make sure "High septon" is still there at the end 
 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
