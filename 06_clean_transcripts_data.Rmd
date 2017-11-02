@@ -187,7 +187,7 @@ delete.non.characters <- c("A VOICE", "ALL", "ALL THREE", "ALL TOGETHER",
   "EVERYBODY", "FAIR TRIAL", "FIRST LESSON", "I BEG YOU", "OF HOUSE FREY",
   "PIG FARMER", "SHOUTING", "THE TRUTH NOW", "WE ASK AGAIN", "WHO WILL TRIUMPH",
   "M WRONG", "S LANDING BAKER", "S LANDING PAGE", "S TOWN WHORE",
-  "S WATCH", "S WATCHERS", "STREET URCHIN", "AND GRENN") %>%
+  "S WATCH", "S WATCHERS", "STREET URCHIN", "AND GRENN", "EXT WINTERFELL") %>%
   str_trim(side = "right") %>%
   unique()
 
@@ -688,9 +688,6 @@ rm(next.current.identifier, number.new.added)
 
 ```
 
-
-TO DO: REVIEW FROM HERE ONWARDS
-
 ### Characters to delete from transcripts
 These were spot as characters from transcripts but are not. They should be deleted.
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
@@ -710,24 +707,37 @@ rm(deleted.characters)
 
 ```
 
-### Character identifiers to update after manual check
 
-With manual checks we imputed identifiers to match wikipedia scrapped characters (characters.all.df) with those in the transcripts (characters.transcripts.df)
+### Character identifiers to update after manual check
 
 Need to add new names and identities for those that were added after the manual review. 
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 matched.characters <- characters.manually.matched %>%
-  mutate(characters.transcripts.cleaned_new = if_else(comment == "add as new character",
+  mutate(character.names.wikipedia = if_else(comment == "add as new character" & !is.na(comment),
                                                   true = toupper(new_name),
-                                                  false = characters.transcripts.cleaned)) %>%
-  rename(identifier_new = identifier) %>%
+                                                  false = character.names.wikipedia)) %>%
   filter(is.na(comment) | comment != "delete") %>%
-  select(characters.transcripts.original, 
-         characters.transcripts.cleaned_new, identifier_new)
+  select(characters.transcripts.original, character.names.wikipedia)
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 characters.transcripts.df %<>%
-  left_join(matched.characters, by = "characters.transcripts.original") %>% #cleaned have been modified. match with original
+  left_join(matched.characters, by = "characters.transcripts.original") 
+
+characters.transcripts.df %<>%
+  mutate(characters.transcripts.cleaned = if_else(!is.na(character.names.wikipedia),
+                                                  true = character.names.wikipedia,
+                                                  false = characters.transcripts.cleaned)) %>%
+  select(-character.names.wikipedia)
+  
+```
+  
+  
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+  
   mutate(identifier = if_else(!is.na(identifier),
                               true = identifier,
                               false = identifier_new),
@@ -738,6 +748,36 @@ characters.transcripts.df %<>%
 characters.transcripts.df
 
 ```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df %<>%
+  left_join(characters.all.map.df %>% select(character.names.wikipedia, identifier) %>% rename(identifier.wiki = identifier),
+            by = c("characters.transcripts.cleaned" = "character.names.wikipedia") ) %>%
+  mutate(identifier = if_else(is.na(identifier) & !is.na(identifier.wiki),
+                              true = identifier.wiki,
+                              false = identifier) ) %>%
+  select(-identifier.wiki)
+
+```
+
+New ones to match
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.transcripts.df %>%
+  filter(is.na(identifier))
+
+```
+
+
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+stop("Atura't")
+
+```
+Previous code:
+
 
 
 Fill identifier for those that were added to the wikipedia list. Do this by merging characters.transcripts with wikipedia characters (characters.all) 
