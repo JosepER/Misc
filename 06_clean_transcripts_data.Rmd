@@ -207,7 +207,8 @@ delete.non.characters.names <- characters.transcripts.df$characters.transcripts.
 
 delete.non.characters.index <- characters.transcripts.df$characters.transcripts.cleaned %>% str_which(pattern = rebus::or1(delete.non.characters))
 
-not.to.delete <- rebus::or("ALLIS", "MANCE", "MANDERLY", "SMALLJON","ROBETT GLOVER", "TALLA", "TOMMEN")
+not.to.delete <- rebus::or("ALLIS", "MANCE", "MANDERLY", "SMALLJON",
+                           "ROBETT GLOVER", "TALLA", "TOMMEN", "HIGH SEPTON")
   
 delete.non.characters.patterns.df <- data_frame(delete.non.characters.names, delete.non.characters.index) %>% arrange(delete.non.characters.names) 
 
@@ -781,8 +782,6 @@ characters.transcripts.df %<>%
 ```
 
 
-
-
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 characters.transcripts.df %>%
@@ -792,21 +791,7 @@ characters.transcripts.df %>%
 
 
 
-Chollo needs to be added 
-Lord Royce is Yohn Royce
-MERRY is Merry Frey
-RYGER RIVERS needs to be added 
-SEPTON should be deleted
-STEVRON FREY should be added
-THRONEKHAL DROGO is KHAL DROGO
 
-Make sure "High septon" is still there at the end 
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-stop("Atura't")
-
-```
 Previous code:
 
 
@@ -829,7 +814,8 @@ characters.all.map.df
 
 ```
 
-We will probably not need first names any more
+
+We will probably not need first names of characters any more. Here we delete them
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 characters.all.map.df %<>% select(-characters.all.firstname)
@@ -839,18 +825,14 @@ rm(characters.all.firstname)
 ```
 
 
+
+
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-characters.transcripts.df %<>%
-  left_join(characters.all.map.df %>% rename(identifier_wikipedia = identifier),
-            by = c("characters.transcripts.cleaned" = "character.names.wikipedia") ) %>%
-  mutate(identifier = if_else(is.na(identifier) & !is.na(identifier_wikipedia),
-                              true = identifier_wikipedia,
-                              false = identifier)) %>%
-  select(-identifier_wikipedia)
-  
+stop("Atura't")
 
 ```
+
 
 Impute manually to those patterns that were not removed due to ambiguities. These correspond to:
 * LORD KARSTARK
