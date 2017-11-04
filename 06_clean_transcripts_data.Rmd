@@ -824,43 +824,10 @@ rm(characters.all.firstname)
 
 ```
 
-
-
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-stop("Atura't")
-
-```
-
-
-Impute manually to those patterns that were not removed due to ambiguities. These correspond to:
-* LORD KARSTARK
-* LORD MORMONT
-* YOUNG LYANNA
-
-```{r eval=TRUE, warning=FALSE, message=FALSE}
-
-imputed.identifiers <- data_frame(wikipedia_names = c("RICKARD KARSTARK", "JEOR MORMONT", "LYANNA STARK"),
-           transcripts_names = c("LORD KARSTARK", "LORD MORMONT", "YOUNG LYANNA") )
-
-imputed.identifiers %<>%
-  left_join(characters.all.map.df, by = c("wikipedia_names" = "character.names.wikipedia")) %>%
-  rename(identifier_wikipedia = identifier)
-
-characters.transcripts.df %<>%
-  left_join(imputed.identifiers, by = c("characters.transcripts.original"= "transcripts_names") ) %>%
-  mutate(identifier = if_else(!is.na(wikipedia_names),
-                              true = identifier_wikipedia,
-                              false = identifier)) %>%
-  select(-identifier_wikipedia, wikipedia_names)
-
-```
-
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
 rm(imputed.identifiers, added.characters, matched.characters, 
-   repeated.first.names)
+   repeated.first.names, characters.manually.matched, more.added.characters)
 
 ```
 
@@ -873,27 +840,200 @@ View(characters.transcripts.df)
 
 ```
 
-To do: checked eyed raven pattern that seemed not to be captured before!
+**How many names do wikipedia characters have in transcripts?**
 ```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-episode.list.df %>% 
-  select(transcript) %>% 
-  purrr::transpose() %>%
-  map_lgl(function(x){x %>% str_detect("EYED RAVEN:")}) %>%
-  which()
+different.names.characters <- characters.all.map.df %>%
+  left_join(characters.transcripts.df %>%
+  count(identifier)) %>%
+  arrange(desc(n))
+
+max.different.names.characters <- different.names.characters$n %>% max(na.rm = T)
+
+different.names.characters
+
+rm(different.names.characters)
+
+```
+
+Some characters, such as 'DAENERYS TARGARYEN', 'PYCELLE' and 'RODRICK CASSEL' were especially problematic.
+
+
+
+#Check which characters appear in both datasets (transcripts and wikipedia)
+
+Test missing values in character datasets.
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+test1 <- is.na(characters.transcripts.df$characters.transcripts.cleaned) %>%
+  sum()
+
+test2 <- is.na(characters.all.map.df$character.names.wikipedia) %>%
+  sum()
+
+if(test1 > 0 | test2 > 0){
   
+  stop("JER: Character names datasets have missing values. This should not be the case. Check code chunck 'Test missing values in character datasets'.")
+  
+}
+
+
+rm(test1, test2)
+
+```
+
+~100% of characters from transcripts were identified with characters in wikipedia.
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+sum(characters.transcripts.df$identifier %in% characters.all.map.df$identifier)/nrow(characters.transcripts.df)
+
+```
+
+~70% of characters in the scrapped wikipedia match a name in transcripts.
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+sum(characters.all.map.df$identifier %in% characters.transcripts.df$identifier )/nrow(characters.all.map.df)
+
+```
+
+**Unmatched names**
+Some characters are not humans and so can not participate in transcripts e.g. 'VISERION', 'SUMMER', 'SHAGGYDOG'. Others are babies e.g. 'BARRA'.  
+
+Others might only appear in missing episodes.
+
+TO DO: Ideally I would go throught this list and check character by character.
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.all.map.df %>%
+  filter(!identifier %in% characters.transcripts.df$identifier)
+
+```
+
+# Merge both datasets
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.all.map.df
+
+characters.transcripts.df
+
+
+```
+
+Aggregate characters in transcripts to create a 'wide' dataset.
+"_" seems a safe separator.
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+if(str_count(characters.transcripts.df$characters.transcripts.original, "_") %>% sum > 0){
+  
+  stop("The separator used to aggregate the dataset with characters from transcripts is not safe.s")
+  
+}
+
+characters.transcripts.df.gathered <- characters.transcripts.df %>%
+  select(characters.transcripts.original, identifier) %>%
+  group_by(identifier) %>%
+  mutate(characters.transcripts = str_c(characters.transcripts.original, collapse = "_")) %>%
+  select(-characters.transcripts.original) %>%
+  unique %>%
+  separate(col = characters.transcripts,
+           into = str_c("character_name_transcripts", 1:max.different.names.characters, sep = "_"),
+           sep = "_", remove = TRUE)
+
+characters.transcripts.df.gathered
+
+```
+
+Merge aggregated file with dataset with all characters 
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.all.map.df %<>%
+  mutate(appears_in_transcripts = if_else(identifier %in% characters.transcripts.df.gathered$identifier, true = 1, false = 0) ) %>%
+  left_join(characters.transcripts.df.gathered, by = "identifier") 
+
 ```
 
 
 
-Check which characters from wikipedia do not appear in transcripts. Do the same for dead characters.
 
-Good news and bad news. IDs might not have moved but non-deleted patterns do not appear in wikipedia nor transcripts
+# Check overlap with dead characters
 
-These guys shouldn't exist because they were replaced by their 
+Check overlap with wikipedia characters. All dead characters are identified in our list of wikipedia characters.
+```{r eval=TRUE, warning=FALSE, message=FALSE}
 
-check the 'to do' in the script. It's about the 'Eyed Raven' character
+characters.dead %<>%
+  mutate(character = if_else(character == "Grand Pycelle",
+                             true = "PYCELLE",
+                             false = character %>% toupper)  )
+
+characters.dead$character[!characters.dead$character %in% characters.all.map.df$character.names.wikipedia]
+
+```
+
+# Merge dataset with all characters (wikipedia) with deads
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.all.map.df %<>%
+  mutate(died = if_else(character.names.wikipedia %in% characters.dead$character,
+                        true = 1,
+                        false = 0)) %>%
+  left_join(characters.dead %>% select(character, season, episode_number), 
+            by = c("character.names.wikipedia" = "character")) %>%
+  rename(season_death = season, episode_number_death = episode_number)
+
+```
+
+#Exploration of matched deaths by season (TO DO:MOVE TO FUTURE SCRIPTS)
+
+TO DO: THIS COULD GO IN FUTURE SCRIPTS
+
+How many of the dead characters are identified in transcripts?
+Around 62% appear in transcripts.
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.all.map.df %>%
+  filter(died == 1) %>%
+  group_by(appears_in_transcripts) %>%
+  summarise(n. = n(),
+            prop = (n./nrow(characters.all.map.df %>% filter(died == 1))) %>% round(3) )
+
+```
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+characters.all.map.df %>%
+  filter(died == 1) %>%
+  group_by(season_death, appears_in_transcripts) %>%
+  summarise(n. = n()) %>%
+  mutate(prop.deaths.appear.transcripts = (n./sum(n.)) %>% round(3)) %>%
+  filter(appears_in_transcripts == 1)
+
+```
+
+Compare to number of missing episodes in each season
+
+```{r eval=TRUE, warning=FALSE, message=FALSE}
+
+episode.list.df %>% 
+  mutate(missing_episode = if_else(link == "missing episode",
+                                   true = 1, false = 0)) %>%
+  group_by(season, missing_episode) %>%
+  summarise(n. = n()) %>%
+  mutate(prop = (n./sum(n.)) %>% round(2)) %>%
+  filter(missing_episode == 1)
+
+```
 
 
+
+PYCELLE
 
 # Export objects for exploration
+
+Export both datasets with characters from transcripts and from wikipedia
+
+Create a larger dataset on the basis of all.characters?
+
+
+
